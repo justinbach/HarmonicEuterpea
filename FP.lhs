@@ -37,11 +37,25 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
 
-> somewhere' =
+Note that there's a cheat on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing.
 
->   ((Modify (Phrase [Chord G Min7]))  $
+> bodyAndSoul :: Music Pitch
+> bodyAndSoul =
+>   tempo hn $
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 %2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
+>   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
+>   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
 
->    d 6 dqn :+: bf 5 sn :+: c 6 sn :+: ef 6 wn)
+>   ((Modify (Phrase [Chord Df Maj7])) $ af 5 qn :+: (tempo (3%2) (af 5 en :+: bf 5 en :+: af 5 en))) :+:
+>   ((Modify (Phrase [Chord Gf Dom7])) $ ef 6 dqn :+: c 6 en) :+:
+>   ((Modify (Phrase [Chord F Min7])) $ ef 6 qn :+: df 6 qn) :+:
+>   ((Modify (Phrase [Chord E Dim7])) $ c 6 qn :+: bf 5 qn) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: df 6 qn :+: (tempo (3 % 2) (bf 5 qn :+: gf 5 qn :+: bf 4 qn)))
+
+TODO: minor 7 flat 5 support!
+
+
 
 
 
@@ -116,6 +130,20 @@ This helper function adds the core non-root chord tones to the voicing.
 >             ns  = [iii, v]
 >           in
 >             dedup ns
+>         Dim ->
+>           let
+>             iii = get357 pc 3 hd
+>             v   = get357 pc 6 hd
+>             ns  = [iii, v]
+>           in
+>             dedup ns
+>         Aug ->
+>           let
+>             iii = get357 pc 4 hd
+>             v   = get357 pc 7 hd
+>             ns  = [iii, v]
+>           in
+>             dedup ns
 >         Maj7 ->
 >           let
 >             iii = get357 pc 4 hd
@@ -148,7 +176,6 @@ This helper function adds the core non-root chord tones to the voicing.
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
->         _    -> []
 
 This helper function adds harmonic extensions and color tones to the voicing.
 
