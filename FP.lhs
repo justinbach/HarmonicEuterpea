@@ -60,23 +60,24 @@ Root    : (A, 2) - (C, 4)
 357     : (D, 4) - (E, 5)
 Tensions: (G, 4) - (A, 6)
 
->     getInRange lo hi hd off initOct dur =
+>     getInRange lo hi initOct pc off e =
 >       let
->         naiveAP = absPitch(fst (pitch (ePitch hd + off)), initOct)
->         (naivePC, naiveOct) = pitch naiveAP
+>         naiveAP = absPitch(pitch (absPitch (pc, initOct) + off))
 >       in
 >       case (compare naiveAP (absPitch lo), compare naiveAP (absPitch hi)) of
->         (LT, _) -> hd {ePitch = absPitch (naivePC, naiveOct + 1)}
->         (_, GT) -> hd {ePitch = absPitch (naivePC, naiveOct - 1)}
->         (_, _)  -> hd {ePitch = naiveAP}
+>         (LT, _) -> e {ePitch = absPitch (pc, initOct + 1)}
+>         (_, GT) -> e {ePitch = absPitch (pc, initOct - 1)}
+>         (_, _)  -> e {ePitch = naiveAP}
 
->     getRoot hd dur = getInRange (A, 2) (C, 4) hd 0 3 (eDur hd)
+>     getRoot pc e = getInRange (A, 2) (C, 4) 3 pc 0 e
+
+>     get357 pc off e  = getInRange (D, 4) (E, 5) 4 pc off e
 
 
 This helper function adds the root to the harmonic voicing.
 
 >     addRoot hd pc ct =
->       [getRoot (hd {ePitch = absPitch (pc, 4)}) (eDur hd)] -- TODO: fix maxTime implementation
+>       [getRoot pc hd] -- TODO: fix maxTime implementation
 
 This helper function adds the core non-root chord tones to the voicing.
 
@@ -87,27 +88,34 @@ This helper function adds the core non-root chord tones to the voicing.
 >             $ zip (replicate (length ns) hd) ns
 >       in
 >       case ct of
+>         Maj ->
+>           let
+>             iii = get357 pc 4 hd
+>             v   = get357 pc 7 hd
+>             ns  = [iii, v]
+>           in
+>             dedup ns
 >         Maj7 ->
 >           let
->             iii = hd {ePitch = absPitch (pc, 4) + 4}
->             v   = hd {ePitch = absPitch (pc, 4) + 7}
->             vii = hd {ePitch = absPitch (pc, 4) - 1}
+>             iii = get357 pc 4 hd
+>             v   = get357 pc 7 hd
+>             vii = get357 pc (-2) hd
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
 >         Min7 ->
 >           let
->             iii = hd {ePitch = absPitch (pc, 4) + 3}
->             v   = hd {ePitch = absPitch (pc, 4) + 7}
->             vii = hd {ePitch = absPitch (pc, 4) - 2}
+>             iii = get357 pc 3 hd
+>             v   = get357 pc 7 hd
+>             vii = get357 pc (-2) hd
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
 >         Dom7 ->
 >           let
->             iii = hd {ePitch = absPitch (pc, 4) + 4}
->             v   = hd {ePitch = absPitch (pc, 4) + 7}
->             vii = hd {ePitch = absPitch (pc, 4) - 2}
+>             iii = get357 pc 4 hd
+>             v   = get357 pc 7 hd
+>             vii = get357 pc (-2) hd
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
