@@ -24,7 +24,11 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
 >   ((Modify (Phrase [Chord Bf Dom7])) $ d 6 qn) :+:
->   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn)
+>   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
+>   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
+>   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
+>   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn)
+
 
 
 
@@ -95,11 +99,18 @@ This helper function adds the core non-root chord tones to the voicing.
 >             ns  = [iii, v]
 >           in
 >             dedup ns
+>         Min ->
+>           let
+>             iii = get357 pc 3 hd
+>             v   = get357 pc 7 hd
+>             ns  = [iii, v]
+>           in
+>             dedup ns
 >         Maj7 ->
 >           let
 >             iii = get357 pc 4 hd
 >             v   = get357 pc 7 hd
->             vii = get357 pc (-2) hd
+>             vii = get357 pc (-1) hd
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
@@ -116,6 +127,14 @@ This helper function adds the core non-root chord tones to the voicing.
 >             iii = get357 pc 4 hd
 >             v   = get357 pc 7 hd
 >             vii = get357 pc (-2) hd
+>             ns  = [iii, v, vii]
+>           in
+>             dedup ns
+>         Dim7 ->
+>           let
+>             iii = get357 pc 3 hd
+>             v   = get357 pc 6 hd
+>             vii = get357 pc 9 hd
 >             ns  = [iii, v, vii]
 >           in
 >             dedup ns
