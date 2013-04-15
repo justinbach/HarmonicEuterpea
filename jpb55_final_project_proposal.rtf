@@ -1,0 +1,22 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf370
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww14380\viewh16520\viewkind1
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 Justin Bachorik\
+CPSC-531\
+4/2/2013\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\qc
+\cf0 Final Project Proposal\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 	For my final project, I would like to modify Euterpea to add support for explicit harmonic context. Specifically, just as musical fragments can be "tagged" with the Modify _ constructor to denote the usage of a particular instrument, tempo, or other effect, I would like to allow musical fragments to be tagged with chordal information. The outcome of this project will be a notational system in Euterpea that corresponds, ideally, to a "lead sheet" of the type used by jazz musicians, consisting of a single-note melody line and the harmony with which it is meant to coexist.\
+\
+	Of course, adding notational support only comprises part of the project; what good is a notational system if the results cannot be heard? The greater challenge will be adding interpretational support to this harmonic context, resulting in performances consisting both of the given melody and some sort of textural realization of the underlying harmony.\
+\
+	My current implementational strategy involves adding a new PhraseAttribute type that contains chord information, modeled as a new data type Chord p t, where p is a pitch class and t is a enumerated ChordType data type consisting of values like Maj7, Min7, Dom7, and so on. I've also considered using roman-numeral notation instead of pitch classes and translating everything relative to the current key context; I'm not sure which approach is better. The voicing that a player uses for a given chord type certainly depends on diatonic context (e.g. a 9th might be included in a iim7 voicing but not necessarily in a iiim7, as the latter would produce non-diatonic results), so perhaps it would be better to use roman numerals. On the other hand, roman numerals might be awkward in the context of non-traditional harmony (e.g. a bVImaj7 chord in a major tonality). \
+\
+	Either way, my ultimate goal is to interpret these harmonic notations at the player level by creating a few new players and endowing each with a new version of interpPhrase. Ideally, I'll create at least two players: an inPlayer, who plays relatively conservative voicings, and an outPlayer, who uses tritone substitutions, chromatic alterations, and other reharmonizations more freely. The results may well vary from this initial goal depending upon the rate of progress, but in the end I'd like to have two versions of a jazz standard (e.g. "When I Fall In Love"), each produced by the same Music value, but performed by two different players using quite different harmonic textures.\
+	 }
