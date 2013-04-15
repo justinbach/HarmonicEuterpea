@@ -27,7 +27,16 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
 >   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn)
+>   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
+>   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
+>   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
+>   ((Modify (Phrase [Chord Ef Maj7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
+>   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
+>   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
+>   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
+>   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
+>   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
+
 
 
 
