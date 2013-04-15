@@ -30,12 +30,18 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
 >   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
 >   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
->   ((Modify (Phrase [Chord Ef Maj7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
+>   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
 >   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
 >   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
 >   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
 >   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
+
+> somewhere' =
+
+>   ((Modify (Phrase [Chord G Min7]))  $
+
+>    d 6 dqn :+: bf 5 sn :+: c 6 sn :+: ef 6 wn)
 
 
 
@@ -56,11 +62,6 @@ This section handles the creation of different players for interpreting the abov
 > myPasChordHandler (Chord pc ct) pf =
 >   let
 
-These two helper functions are used to calculate the duration of the entire phrase.
-
->     maxTime e t = max ((eTime e) + (eDur e)) t
->     pfLength pf = foldr maxTime 0 pf
-
 This helper function is used in assessing what notes to include in a voicing, given the melody line.
 
 >     areSamePC (e1, e2) =
@@ -70,7 +71,7 @@ This helper function is used in assessing what notes to include in a voicing, gi
 These helper functions ensure that the notes selected for the voicing fall within an acceptable range. The ranges are as follows:
 
 Root    : (A, 2) - (C, 4)
-357     : (D, 4) - (E, 5)
+357     : (D, 4) - (C, 5)
 Tensions: (G, 4) - (A, 6)
 
 >     getInRange lo hi initOct pc off e =
@@ -159,11 +160,20 @@ This helper function ties the various component builders together.
 >     genChord pf pc ct =
 >       let hd = head pf in
 >       (addRoot hd pc ct) ++ (add357 hd pc ct) ++ (addTensions hd pc ct)
->   in
+
+These helper functions modify the notes to be as long as the phrase ("held down")
+
+>     maxTime (s, e) t = max (((eTime e) - s) + (eDur e)) t
+>     pfLength pf = foldr maxTime 0 (zip (replicate (length pf) (eTime (head pf))) pf)
+
+>     fixDurs pf es =
+>       let pfDur = pfLength pf in
+>       map (\e -> e {eDur = pfDur}) es
 
 And finally, the body of the function adds the voicing to the melody line.
 
->     (genChord pf pc ct) ++ pf
+>   in
+>     (fixDurs pf (genChord pf pc ct)) ++ pf
 
 Example of usage:
 
