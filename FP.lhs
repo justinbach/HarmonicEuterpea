@@ -19,7 +19,9 @@ This section handles the creation of a few lead sheets for testing.
 
 > somewhere :: Music Pitch
 > somewhere =
->   (Modify (Phrase [Chord Ef Maj7])) $ ef 4 hn :+: ef 5 hn
+>   tempo hn $
+>   ((Modify (Phrase [Chord Ef Maj7])) $ ef 5 hn) :+:
+>   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn)
 
 
 ===============================================
@@ -36,13 +38,37 @@ This section handles the creation of different players for interpreting the abov
 
 > myPasChordHandler (Chord pc ct) pf =
 >   let
+
+These two helper functions are used to calculate the duration of the entire phrase.
+
 >     maxTime e t = max ((eTime e) + (eDur e)) t
 >     pfLength pf = foldr maxTime 0 pf
->     addRoot pf =
+
+This helper function adds the root to the harmonic voicing.
+
+>     addRoot hd pc ct =
+>       [hd {ePitch = absPitch (pc, 3)}] -- TODO: fix maxTime implementation
+
+This helper function adds the core non-root chord tones to the voicing.
+
+>     add357 hd pc ct =
+>       []
+
+This helper function adds harmonic extensions and color tones to the voicing.
+
+>     addTensions hd pc ct =
+>       []
+
+This helper function ties the various component builders together.
+
+>     genChord pf pc ct =
 >       let hd = head pf in
->       (hd {ePitch = ePitch hd - 20, eDur = (pfLength pf)}):pf
+>       (addRoot hd pc ct) ++ (add357 hd pc ct) ++ (addTensions hd pc ct)
 >   in
->     addRoot pf
+
+And finally, the body of the function adds the voicing to the melody line.
+
+>     (genChord pf pc ct) ++ pf
 
 Example of usage:
 
