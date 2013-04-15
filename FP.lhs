@@ -65,29 +65,32 @@ This helper function adds the core non-root chord tones to the voicing.
 >     add357 hd pc ct =
 >       let
 >         dedup ns =
->           map (\(x, y) -> x) $ filter (not . areSamePC)
+>           map (\(x, y) -> y) $ filter (not . areSamePC)
 >             $ zip (replicate (length ns) hd) ns
 >       in
 >       case ct of
 >         Maj7 ->
 >           let
 >             iii = hd {ePitch = absPitch (pc, 4) + 4}
+>             v   = hd {ePitch = absPitch (pc, 4) + 7}
 >             vii = hd {ePitch = absPitch (pc, 4) - 1}
->             ns  = [iii, vii]
+>             ns  = [iii, v, vii]
 >           in
 >             dedup ns
 >         Min7 ->
 >           let
 >             iii = hd {ePitch = absPitch (pc, 4) + 3}
+>             v   = hd {ePitch = absPitch (pc, 4) + 7}
 >             vii = hd {ePitch = absPitch (pc, 4) - 2}
->             ns  = [iii, vii]
+>             ns  = [iii, v, vii]
 >           in
 >             dedup ns
 >         Dom7 ->
 >           let
 >             iii = hd {ePitch = absPitch (pc, 4) + 4}
+>             v   = hd {ePitch = absPitch (pc, 4) + 7}
 >             vii = hd {ePitch = absPitch (pc, 4) - 2}
->             ns  = [iii, vii]
+>             ns  = [iii, v, vii]
 >           in
 >             dedup ns
 >         _    -> []
