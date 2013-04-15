@@ -19,7 +19,7 @@ This section handles the creation of a few lead sheets for testing.
 
 > somewhere :: Music Pitch
 > somewhere =
->   tempo hn $
+>   tempo dhn $
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
@@ -54,17 +54,35 @@ This helper function is used in assessing what notes to include in a voicing, gi
 >       let ((pc, _),(pc', _)) = (pitch (ePitch e1), pitch (ePitch e2)) in
 >       pc' == pc
 
+These helper functions ensure that the notes selected for the voicing fall within an acceptable range. The ranges are as follows:
+
+Root    : (A, 2) - (C, 4)
+357     : (D, 4) - (E, 5)
+Tensions: (G, 4) - (A, 6)
+
+>     getInRange lo hi hd off initOct dur =
+>       let
+>         naiveAP = absPitch(fst (pitch (ePitch hd + off)), initOct)
+>         (naivePC, naiveOct) = pitch naiveAP
+>       in
+>       case (compare naiveAP (absPitch lo), compare naiveAP (absPitch hi)) of
+>         (LT, _) -> hd {ePitch = absPitch (naivePC, naiveOct + 1)}
+>         (_, GT) -> hd {ePitch = absPitch (naivePC, naiveOct - 1)}
+>         (_, _)  -> hd {ePitch = naiveAP}
+
+>     getRoot hd dur = getInRange (A, 2) (C, 4) hd 0 3 (eDur hd)
+
 
 This helper function adds the root to the harmonic voicing.
 
 >     addRoot hd pc ct =
->       [hd {ePitch = absPitch (pc, 3)}] -- TODO: fix maxTime implementation
+>       [getRoot (hd {ePitch = absPitch (pc, 4)}) (eDur hd)] -- TODO: fix maxTime implementation
 
 This helper function adds the core non-root chord tones to the voicing.
 
 >     add357 hd pc ct =
 >       let
->         dedup ns =
+>         dedup ns = -- don't duplicate notes in the melody!
 >           map (\(x, y) -> y) $ filter (not . areSamePC)
 >             $ zip (replicate (length ns) hd) ns
 >       in
