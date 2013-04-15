@@ -20,8 +20,12 @@ This section handles the creation of a few lead sheets for testing.
 > somewhere :: Music Pitch
 > somewhere =
 >   tempo hn $
->   ((Modify (Phrase [Chord Ef Maj7])) $ ef 5 hn) :+:
->   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn)
+>   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
+>   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
+>   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
+>   ((Modify (Phrase [Chord Bf Dom7])) $ d 6 qn) :+:
+>   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn)
+
 
 
 ===============================================
@@ -44,6 +48,13 @@ These two helper functions are used to calculate the duration of the entire phra
 >     maxTime e t = max ((eTime e) + (eDur e)) t
 >     pfLength pf = foldr maxTime 0 pf
 
+This helper function is used in assessing what notes to include in a voicing, given the melody line.
+
+>     areSamePC (e1, e2) =
+>       let ((pc, _),(pc', _)) = (pitch (ePitch e1), pitch (ePitch e2)) in
+>       pc' == pc
+
+
 This helper function adds the root to the harmonic voicing.
 
 >     addRoot hd pc ct =
@@ -52,7 +63,34 @@ This helper function adds the root to the harmonic voicing.
 This helper function adds the core non-root chord tones to the voicing.
 
 >     add357 hd pc ct =
->       []
+>       let
+>         dedup ns =
+>           map (\(x, y) -> x) $ filter (not . areSamePC)
+>             $ zip (replicate (length ns) hd) ns
+>       in
+>       case ct of
+>         Maj7 ->
+>           let
+>             iii = hd {ePitch = absPitch (pc, 4) + 4}
+>             vii = hd {ePitch = absPitch (pc, 4) - 1}
+>             ns  = [iii, vii]
+>           in
+>             dedup ns
+>         Min7 ->
+>           let
+>             iii = hd {ePitch = absPitch (pc, 4) + 3}
+>             vii = hd {ePitch = absPitch (pc, 4) - 2}
+>             ns  = [iii, vii]
+>           in
+>             dedup ns
+>         Dom7 ->
+>           let
+>             iii = hd {ePitch = absPitch (pc, 4) + 4}
+>             vii = hd {ePitch = absPitch (pc, 4) - 2}
+>             ns  = [iii, vii]
+>           in
+>             dedup ns
+>         _    -> []
 
 This helper function adds harmonic extensions and color tones to the voicing.
 
