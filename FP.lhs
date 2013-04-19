@@ -20,6 +20,7 @@ This section handles the creation of a few lead sheets for testing.
 > somewhere :: Music Pitch
 > somewhere =
 >   tempo dhn $
+>   Modify (KeySig Ef Major) $
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
@@ -27,21 +28,23 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
 >   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
->   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
->   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
->   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
->   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
->   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
->   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
->   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
+>   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn)
+
+-->   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
+-->   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
+-->   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
+-->   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
+-->   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
+-->   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
+-->   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
+-->   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
 
 Note that there's a cheat on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
 
 > bodyAndSoul :: Music Pitch
 > bodyAndSoul =
 >   tempo dhn $
+>   Modify (KeySig Df Major) $
 >   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
 >   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
 >   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
@@ -67,11 +70,11 @@ Note that there's a cheat on the first note of Body and Soul, which is supposed 
 This section handles the creation of different players for interpreting the above songs.
 
 > myPMap                       :: PlayerName -> Player Note1
-> myPMap "ChordPlayer"          = chordPlayer
+> myPMap "DiatonicPlayer"      = diatonicPlayer
 
-> chordPlayer :: Player (Pitch, [NoteAttribute])
-> chordPlayer =  defPlayer
->               {pName        = "ChordPlayer",
+> diatonicPlayer :: Player (Pitch, [NoteAttribute])
+> diatonicPlayer =  defPlayer
+>               {pName        = "DiatonicPlayer",
 >                interpPhrase = defInterpPhrase myPasChordHandler}
 
 > myPasChordHandler (Chord pc ct) pf =
@@ -92,21 +95,22 @@ This helper function is used to remove from a voicing any pitch already in the m
 These helper functions ensure that the notes selected for the voicing fall within an acceptable range. The ranges are as follows:
 
 Root    : (A, 2) - (C, 4)
-357     : (D, 4) - (E, 5)
+357     : (D, 4) - (C, 5)
 Tensions: (G, 4) - (A, 6)
 
+-- TODO: improve this function
 >     getInRange lo hi initOct pc off e =
 >       let
 >         naiveAP = absPitch(pitch (absPitch (pc, initOct) + off))
 >       in
 >       case (compare naiveAP (absPitch lo), compare naiveAP (absPitch hi)) of
->         (LT, _) -> e {ePitch = absPitch (pc, initOct + 1)}
->         (_, GT) -> e {ePitch = absPitch (pc, initOct - 1)}
+>         (LT, _) -> getInRange lo hi initOct pc 0 (e {ePitch = absPitch (pc, initOct + 1)})
+>         (_, GT) -> getInRange lo hi initOct pc 0 (e {ePitch = absPitch (pc, initOct - 1)})
 >         (_, _)  -> e {ePitch = naiveAP}
 
 >     getRoot pc e = getInRange (A, 2) (C, 4) 3 pc 0 e
->     get357 pc off e  = getInRange (D, 4) (E, 5) 4 pc off e
->     getTensions pc off e = getInRange (G, 4) (A, 6) 5 pc off e
+>     get357 pc e off = getInRange (D, 4) (E, 5) 4 pc off e
+>     getTensions pc e off = getInRange (G, 4) (A, 6) 5 pc off e
 
 
 This helper function adds the root to the harmonic voicing.
@@ -117,77 +121,24 @@ This helper function adds the root to the harmonic voicing.
 This helper function adds the core non-root chord tones to the voicing.
 
 >     add357 hd pc ct =
->       case ct of
->         Maj ->
->           let
->             iii = get357 pc 4 hd
->             v   = get357 pc 7 hd
->             ns  = [iii, v]
->           in
->             dedup hd ns
->         Min ->
->           let
->             iii = get357 pc 3 hd
->             v   = get357 pc 7 hd
->             ns  = [iii, v]
->           in
->             dedup hd ns
->         Dim ->
->           let
->             iii = get357 pc 3 hd
->             v   = get357 pc 6 hd
->             ns  = [iii, v]
->           in
->             dedup hd ns
->         Aug ->
->           let
->             iii = get357 pc 4 hd
->             v   = get357 pc 7 hd
->             ns  = [iii, v]
->           in
->             dedup hd ns
->         Maj7 ->
->           let
->             iii = get357 pc 4 hd
->             v   = get357 pc 7 hd
->             vii = get357 pc (-1) hd
->             ns  = [iii, v, vii]
->           in
->             dedup hd ns
->         Min7 ->
->           let
->             iii = get357 pc 3 hd
->             v   = get357 pc 7 hd
->             vii = get357 pc (-2) hd
->             ns  = [iii, v, vii]
->           in
->             dedup hd ns
->         Dom7 ->
->           let
->             iii = get357 pc 4 hd
->             v   = get357 pc 7 hd
->             vii = get357 pc (-2) hd
->             ns  = [iii, v, vii]
->           in
->             dedup hd ns
->         Min7f5 ->
->           let
->             iii = get357 pc 3 hd
->             v   = get357 pc 6 hd
->             vii = get357 pc (-2) hd
->             ns  = [iii, v, vii]
->           in
->             dedup hd ns
->         Dim7 ->
->           let
->             iii = get357 pc 3 hd
->             v   = get357 pc 6 hd
->             vii = get357 pc 9 hd
->             ns  = [iii, v, vii]
->           in
->             dedup hd ns
+>       let ints = case ct of
+>             Maj -> [4, 7]
+>             Min -> [3, 7]
+>             Dim -> [3, 6]
+>             Aug -> [4, 7]
+>             Maj7 -> [4, 7, 11]
+>             Min7 -> [3, 7, 10]
+>             Dom7 -> [4, 7, 10]
+>             Min7f5 -> [3, 6, 10]
+>             Dim7 -> [3, 6, 9]
+>       in
+>         map (get357 pc hd) ints
 
-This helper function adds harmonic extensions to the voicing, and uses nondeterminism to decide how to color the chord.
+This helper function adds harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
+
+>     majorInts = [0, 2, 4, 5, 7, 9, 11]
+>     minorInts = [0, 2, 3, 5, 7, 8, 10] -- harmonic
+
 
 >     addTensions hd pc ct =
 >       []
@@ -196,7 +147,7 @@ This helper function ties the various component builders together.
 
 >     genChord pf pc ct =
 >       let hd = head pf in
->       (addRoot hd pc ct) ++ (add357 hd pc ct) ++ (addTensions hd pc ct)
+>       (addRoot hd pc ct) ++ dedup hd (add357 hd pc ct) ++ dedup hd (addTensions hd pc ct)
 
 These helper functions modify the notes to be as long as the phrase ("held down")
 
@@ -207,11 +158,15 @@ These helper functions modify the notes to be as long as the phrase ("held down"
 >       let pfDur = pfLength pf in
 >       map (\e -> e {eDur = pfDur}) es
 
+This fixes the volume of the harmonic accompaniment to be less than that of the melody.
+
+>     fixVols pf ref = map (\e -> e{eVol = 3 * ceiling ((fromIntegral (eVol ref)) / 4) }) pf
+
 And finally, the body of the function adds the voicing to the melody line.
 
 >   in
->     (fixDurs pf (genChord pf pc ct)) ++ pf
+>     fixVols (fixDurs pf (genChord pf pc ct)) (head pf) ++ pf
 
 Example of usage:
 
-*FP> perform myPMap defCon $ toMusic1 $ Modify (Player "ChordPlayer") $ somewhere
+*FP> perform myPMap defCon $ toMusic1 $ Modify (Player "DiatonicPlayer") $ somewhere
