@@ -21,18 +21,14 @@ This section handles the creation of a few lead sheets for testing.
 > somewhere =
 >   tempo dhn $
 >   Modify (KeySig Ef Major) $
-
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
-
 >   ((Modify (Phrase [Chord Bf Dom7])) $ d 6 qn) :+:
-
 >   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
 >   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
 >   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
-
 >   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
 >   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
@@ -48,23 +44,56 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 > bodyAndSoul =
 >   tempo dhn $
 >   Modify (KeySig Df Major) $
->   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
->   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
->   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
->   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
 
->   ((Modify (Phrase [Chord Df Maj7])) $ af 5 qn :+: (tempo (3 % 2) (af 5 en :+: bf 5 en :+: af 5 en))) :+:
+-->   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
+-->   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
+-->   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
+-->   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
+
+-->   ((Modify (Phrase [Chord Df Maj7])) $ af 5 qn :+: (tempo (3 % 2) (af 5 en :+: bf 5 en :+: af 5 en))) :+:
+
 >   ((Modify (Phrase [Chord Gf Dom7])) $ ef 6 dqn :+: c 6 en) :+:
 >   ((Modify (Phrase [Chord F Min7])) $ ef 6 qn :+: df 6 qn) :+:
->   ((Modify (Phrase [Chord E Dim7])) $ c 6 qn :+: bf 5 qn) :+:
->   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: df 6 qn :+: (tempo (3 % 2) (bf 5 qn :+: gf 5 qn :+: bf 4 qn))) :+:
->   ((Modify (Phrase [Chord C Min7f5])) $ f 5 hn) :+:
->   ((Modify (Phrase [Chord F Dom7])) $ ef 5 hn) :+:
->   ((Modify (Phrase [Chord Bf Min7])) $ bf 3 en :+: df 5 en) :+:
->   ((Modify (Phrase [Chord Ef Dom7])) $ ef 5 en :+: f 5 en) :+:
->   ((Modify (Phrase [Chord Ef Min7])) $ af 5 qn) :+:
->   ((Modify (Phrase [Chord Af Dom7])) $ (tempo (3 % 2) (af 5 en :+: bf 5 en :+: e 5 en))) :+:
->   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
+>   ((Modify (Phrase [Chord E Dim7])) $ c 6 qn :+: bf 5 qn)
+
+-->   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: df 6 qn :+: (tempo (3 % 2) (bf 5 qn :+: gf 5 qn :+: bf 4 qn))) :+:
+-->   ((Modify (Phrase [Chord C HalfDim7])) $ f 5 hn) :+:
+-->   ((Modify (Phrase [Chord F Dom7])) $ ef 5 hn) :+:
+-->   ((Modify (Phrase [Chord Bf Min7])) $ bf 4 en :+: df 5 en) :+:
+-->   ((Modify (Phrase [Chord Ef Dom7])) $ ef 5 en :+: f 5 en) :+:
+-->   ((Modify (Phrase [Chord Ef Min7])) $ af 5 qn) :+:
+-->   ((Modify (Phrase [Chord Af Dom7])) $ (tempo (3 % 2) (af 5 en :+: bf 5 en :+: e 5 en))) :+:
+-->   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
+
+> whenIFallInLove :: Music Pitch
+> whenIFallInLove =
+>   tempo dhn $
+>   Modify (KeySig Ef Major) $
+>   let oct = 5
+>       a = ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ ef oct hn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ bf (oct - 1) hn) :+:
+>           ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn) :+:
+>           ((Modify (Phrase [Chord F Dom7])) $ ef oct qn :+: g oct qn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ f oct hn) :+:
+>           ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+>           ((Modify (Phrase [Chord Af Dom7])) $ c (oct + 1) qn :+: bf oct qn) :+:
+>           ((Modify (Phrase [Chord Df Dom7])) $ af oct hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ g oct hn)
+>   in
+>     a
+
+> altTest =
+>   tempo dhn $
+>   Modify (KeySig Ef Major) $
+>   let oct = 5 in
+
+-->   ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+
+>   ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn)
+
 
 
 ===============================================
@@ -110,7 +139,7 @@ This helper function is used to remove from a voicing any pitch already in the m
 These helper functions ensure that the notes selected for the voicing are no more than an octave above the a given threshold. The thresolds are as follows:
 
 Root    : (A, 2)
-357     : (D, 4)
+3&7     : (D, 4)
 Tensions: (G, 4)
 
 >     aboveThreshold threshold e =
@@ -119,7 +148,7 @@ Tensions: (G, 4)
 >         _  -> e {ePitch = ePitch e}
 
 >     getRoot pc e = aboveThreshold (A, 2) e
->     get357 pc e = aboveThreshold (D, 4) e
+>     get37 pc e = aboveThreshold (D, 4) e
 >     getTensions pc e = aboveThreshold (G, 4) e
 
 
@@ -128,42 +157,84 @@ This helper function adds the root to the harmonic voicing.
 >     addRoot hd pc ct =
 >       [getRoot pc hd {ePitch = absPitch (pc, 0)}]
 
-This helper function adds the core non-root chord tones to the voicing.
 
->     add357 hd pc ct =
+This helper function adds the core non-root chord tones to the voicing. Note that this only addresses 3rd and 7ths (where applicable); inclusion of the 5th should be determined on the basis of the melody, and so is classified as a tension.
+
+>     add37 hd pc ct =
 >       let ints = case ct of
->             Maj -> [4, 7]
->             Min -> [3, 7]
->             Dim -> [3, 6]
->             Aug -> [4, 7]
->             Maj7 -> [4, 7, 11]
->             Min7 -> [3, 7, 10]
->             Dom7 -> [4, 7, 10]
->             Min7f5 -> [3, 6, 10]
->             Dim7 -> [3, 6, 9]
+>             Maj -> [4]
+>             Min -> [3]
+>             Dim -> [3]
+>             Aug -> [4]
+>             Maj7 -> [4, 11]
+>             Min7 -> [3, 10]
+>             Dom7 -> [4, 10]
+>             HalfDim7 -> [3, 10]
+>             Dim7 -> [3, 9]
+>             MinMaj7 -> [3, 10]
+>             AugMaj7 -> [4, 10]
 >       in
->         map (get357 pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+>         map (get37 pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
 This helper function adds harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
 
->     majorInts = [0, 2, 4, 5, 7, 9, 11]
->     minorInts = [0, 2, 3, 5, 7, 8, 10] -- harmonic
+>     majorInts = [0, 2, 4, 5, 7, 9, 11] -- major scale
+>     majorTypes = [ -- the possible triads and seventh chords built on each scale degree
+>       [Maj, Maj7],
+>       [Min, Min7],
+>       [Min, Min7],
+>       [Maj, Maj7],
+>       [Maj, Dom7],
+>       [Min, Min7],
+>       [Dim, HalfDim7]
+>       ]
+>
+>     minorInts = [0, 2, 3, 5, 7, 9, 11] -- melodic
+>     minorTypes = [
+>       [Min, MinMaj7],
+>       [Dim, HalfDim7],
+>       [Maj, AugMaj7],
+>       [Maj, Dom7],
+>       [Maj, Dom7],
+>       [Dim, HalfDim7],
+>       [Dim, HalfDim7]
+>       ]
+>     isDiatonic e =
+>       let
+>         (key, mode) = cKey context
+>         ints = if mode == Major then majorInts else minorInts
+>         ap = ePitch e `mod` 12
+>       in
+>         ap `elem` ints
+
+TODO: check whether the chord is diatonic to the current key. If it is, use a known set of melody-compatible tensions. If not, err on the side of safety and keep the voicing more skeletal.
 
 >     addTensions hd pc ct =
 >       let
->         (key, mode) = cKey context
+>         diff = abs (ePitch hd `mod` 12) - (absPitch (pc, 0))
+>         isAltered9th = diff == 1 || diff == 3 -- is the 9th altered in the melody?
+>         isAltered5th = diff == 6 || diff == 8 -- is the 5th altered in the melody?
+>         altered5th = [6, 8]
+>         altered9th = [1, 3]
+>         fifth = if isAltered5th then altered5th else [7]
+>         flatFifth = [6]
+>         augFifth = [8]
+>         ninth = if isAltered9th then altered9th else [2]
+>         thirteenth = if isAltered5th then [] else [9]
 >         ints = case ct of
->             Maj -> []
->             Min -> []
->             Dim -> []
->             Aug -> []
->             Maj7 -> []
->             Min7 -> []
->             Dom7 -> []
->             Min7f5 -> []
->             Dim7 -> []
+>             Maj -> fifth ++ ninth ++ thirteenth
+>             Min -> fifth ++ ninth ++ thirteenth
+>             Dim -> flatFifth
+>             Aug -> augFifth
+>             Maj7 -> fifth ++ ninth ++ thirteenth
+>             Min7 -> fifth ++ ninth ++ thirteenth
+>             Dom7 -> fifth ++ ninth ++ thirteenth
+>             HalfDim7 -> flatFifth
+>             Dim7 -> flatFifth
+>             MinMaj7 -> fifth
+>             AugMaj7 -> fifth
 >       in
->         map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+>         filter isDiatonic $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
 
@@ -175,13 +246,12 @@ This helper function removes any notes from the voicing that are pitched higher 
 >         in
 >           filter (isLowerThanAll pf) chord
 
-
 This helper function ties the various chord component builders together.
 
 >     genChord pf pc ct =
 >       let hd = head pf in
 >       checkMelRange pf  ((addRoot hd pc ct) ++
->                         dedup hd ((add357 hd pc ct) ++
+>                         dedup hd ((add37 hd pc ct) ++
 >                         (addTensions hd pc ct)))
 
 These helper functions modify the notes to be as long as the phrase ("held down")
