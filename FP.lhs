@@ -21,23 +21,26 @@ This section handles the creation of a few lead sheets for testing.
 > somewhere =
 >   tempo dhn $
 >   Modify (KeySig Ef Major) $
+
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
 >   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
+
 >   ((Modify (Phrase [Chord Bf Dom7])) $ d 6 qn) :+:
+
 >   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
 >   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
 >   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn)
+>   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
 
--->   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
--->   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
--->   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
--->   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
--->   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
--->   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
--->   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
--->   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
+>   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
+>   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
+>   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
+>   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
+>   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
+>   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
+>   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
+>   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
 
 Note that there's a cheat on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
 
@@ -92,31 +95,26 @@ This helper function is used to remove from a voicing any pitch already in the m
 >           map (\(x, y) -> y) $ filter (not . areSamePC)
 >             $ zip (replicate (length ns) hd) ns
 
-These helper functions ensure that the notes selected for the voicing fall within an acceptable range. The ranges are as follows:
+These helper functions ensure that the notes selected for the voicing are no more than an octave above the a given threshold. The thresolds are as follows:
 
-Root    : (A, 2) - (C, 4)
-357     : (D, 4) - (C, 5)
-Tensions: (G, 4) - (A, 6)
+Root    : (A, 2)
+357     : (D, 4)
+Tensions: (G, 4)
 
--- TODO: improve this function
->     getInRange lo hi initOct pc off e =
->       let
->         naiveAP = absPitch(pitch (absPitch (pc, initOct) + off))
->       in
->       case (compare naiveAP (absPitch lo), compare naiveAP (absPitch hi)) of
->         (LT, _) -> getInRange lo hi initOct pc 0 (e {ePitch = absPitch (pc, initOct + 1)})
->         (_, GT) -> getInRange lo hi initOct pc 0 (e {ePitch = absPitch (pc, initOct - 1)})
->         (_, _)  -> e {ePitch = naiveAP}
+>     aboveThreshold threshold e =
+>       case compare (ePitch e) (absPitch threshold) of
+>         LT -> aboveThreshold threshold e {ePitch = ePitch e + 12}
+>         _  -> e {ePitch = ePitch e}
 
->     getRoot pc e = getInRange (A, 2) (C, 4) 3 pc 0 e
->     get357 pc e off = getInRange (D, 4) (E, 5) 4 pc off e
->     getTensions pc e off = getInRange (G, 4) (A, 6) 5 pc off e
+>     getRoot pc e = aboveThreshold (A, 2) e
+>     get357 pc e = aboveThreshold (D, 4) e
+>     getTensions pc e = aboveThreshold (G, 4) e
 
 
 This helper function adds the root to the harmonic voicing.
 
 >     addRoot hd pc ct =
->       [getRoot pc hd]
+>       [getRoot pc hd {ePitch = absPitch (pc, 0)}]
 
 This helper function adds the core non-root chord tones to the voicing.
 
@@ -132,13 +130,12 @@ This helper function adds the core non-root chord tones to the voicing.
 >             Min7f5 -> [3, 6, 10]
 >             Dim7 -> [3, 6, 9]
 >       in
->         map (get357 pc hd) ints
+>         map (get357 pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
 This helper function adds harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
 
 >     majorInts = [0, 2, 4, 5, 7, 9, 11]
 >     minorInts = [0, 2, 3, 5, 7, 8, 10] -- harmonic
-
 
 >     addTensions hd pc ct =
 >       []
@@ -147,7 +144,7 @@ This helper function ties the various component builders together.
 
 >     genChord pf pc ct =
 >       let hd = head pf in
->       (addRoot hd pc ct) ++ dedup hd (add357 hd pc ct) ++ dedup hd (addTensions hd pc ct)
+>       (addRoot hd pc ct) ++ dedup hd ((add357 hd pc ct) ++ (addTensions hd pc ct))
 
 These helper functions modify the notes to be as long as the phrase ("held down")
 
