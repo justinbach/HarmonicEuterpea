@@ -10,7 +10,7 @@ Final Project
 > import Data.List
 > import Data.Ratio
 
-This file serves to demonstrate some of the uses of the new Chord PhraseAttribute I've added to Music.hs. In particular, it uses a standard chord-tagged melody line, equivalent to a lead sheet, and constructs a few different players that perform the underlying harmony in different ways.
+This file serves to demonstrate some of the uses of the new Chord PhraseAttribute I've added to Music.hs. In particular, it creates several chord-tagged melodies, equivalent to a lead sheet, and constructs a few different players that perform them, interpreting the underlying harmony in different ways.
 
 
 ===============================================
@@ -42,7 +42,7 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
 
-Note that there's a cheat on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
+Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
 
 > bodyAndSoul :: Music Pitch
 > bodyAndSoul =
@@ -67,7 +67,6 @@ Note that there's a cheat on the first note of Body and Soul, which is supposed 
 >   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
 
 
-
 ===============================================
 
 This section handles the creation of different players for interpreting the above songs.
@@ -78,9 +77,22 @@ This section handles the creation of different players for interpreting the abov
 > diatonicPlayer :: Player (Pitch, [NoteAttribute])
 > diatonicPlayer =  defPlayer
 >               {pName        = "DiatonicPlayer",
->                interpPhrase = defInterpPhrase myPasChordHandler}
+>                interpPhrase = diatonicInterpPhrase}
 
-> myPasChordHandler (Chord pc ct) pf =
+> diatonicInterpPhrase :: PhraseFun a
+> diatonicInterpPhrase pm c [] m = perf pm c m
+> diatonicInterpPhrase pm
+>   c@Context {cTime = t, cPlayer = pl, cInst = i,
+>              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
+>   (pa:pas) m =
+>     let
+>       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>     in
+>       case pa of
+>         ch@(Chord pc ct) -> (myPasChordHandler ch c pf, dur)
+>         _ -> pfd
+
+> myPasChordHandler (Chord pc ct) context pf =
 >   let
 
 This helper function is used in assessing what notes to include in a voicing, given the melody line.
@@ -138,7 +150,20 @@ This helper function adds harmonic extensions to the voicing. In the case of Dia
 >     minorInts = [0, 2, 3, 5, 7, 8, 10] -- harmonic
 
 >     addTensions hd pc ct =
->       []
+>       let
+>         (key, mode) = cKey context
+>         ints = case ct of
+>             Maj -> []
+>             Min -> []
+>             Dim -> []
+>             Aug -> []
+>             Maj7 -> []
+>             Min7 -> []
+>             Dom7 -> []
+>             Min7f5 -> []
+>             Dim7 -> []
+>       in
+>         map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
 This helper function ties the various component builders together.
 
