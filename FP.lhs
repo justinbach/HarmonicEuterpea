@@ -38,6 +38,12 @@ This section handles the creation of a few lead sheets for testing.
 >   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
 >   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
 
+> somewhere' :: Music Pitch
+> somewhere' =
+>   tempo dhn $
+>   Modify (KeySig Ef Major) $
+>   ((Modify (Phrase [Chord Ef Maj7])) $ ef 6 hn)
+
 Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
 
 > bodyAndSoul :: Music Pitch
@@ -173,7 +179,7 @@ This helper function adds the core non-root chord tones to the voicing. Note tha
 >       in
 >         map (get37 pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
-This helper function adds harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
+The following functions add harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
 
 >     majorInts = [0, 2, 4, 5, 7, 9, 11] -- major scale
 >     majorTypes = [ -- the possible triads and seventh chords built on each scale degree
@@ -200,9 +206,11 @@ This helper function adds harmonic extensions to the voicing. In the case of Dia
 >       let
 >         (key, mode) = cKey context
 >         ints = if mode == Major then majorInts else minorInts
->         ap = ePitch e `mod` 12
+>         cap = ePitch e `mod` 12
+>         kap = absPitch (key, 0)
+>         kInts = map (\i -> kap + i `mod` 12) ints
 >       in
->         ap `elem` ints
+>         kap `elem` kInts
 
 >     isDiatonicChord context pc ct = -- check whether a chord is diatonic to current context
 >       let
@@ -218,36 +226,46 @@ This helper function adds harmonic extensions to the voicing. In the case of Dia
 >           Just i  -> ct `elem` (types !! i)
 >           Nothing -> False
 
-TODO: check whether the chord is diatonic to the current key. If it is, use a known set of melody-compatible tensions. If not, err on the side of safety and keep the voicing more skeletal.
+>     isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
+>       abs ((ap1 `mod` 12) - (ap2 `mod` 12)) == 1
 
 >     addTensions hd pc ct =
 >       let
 >         diff = abs (ePitch hd `mod` 12) - (absPitch (pc, 0))
->         isAltered9th = diff == 1 || diff == 3 -- is the 9th altered in the melody?
->         isAltered5th = diff == 6 || diff == 8 -- is the 5th altered in the melody?
->         altered5th = [6, 8]
->         altered9th = [1, 3]
->         fifth = if isAltered5th then altered5th else [7]
->         flatFifth = [6]
->         augFifth = [8]
->         ninth = if isAltered9th then altered9th else [2]
->         thirteenth = if isAltered5th then [] else [9]
+>         isAlt9th = diff == 1 || diff == 3 -- is the 9th altered in the melody?
+>         isAlt5th = diff == 6 || diff == 8 -- is the 5th altered in the melody?
+>         nat5th = [7]
+>         flat5th = [6]
+>         sharp5th = [8]
+>         alt5th = flat5th ++ sharp5th
+>         nat9th = [2]
+>         flat9th = [1]
+>         sharp9th = [3]
+>         alt9th = flat9th ++ sharp9th
+>         nat11th = [5]
+>         nat13th = [9]
+>         maybeAlt5th = if isAlt5th then alt5th else nat5th
+>         maybeAlt9th = if isAlt9th then alt9th else nat9th
+>         maybeAlt13th = if isAlt5th then [] else nat13th
+>         remDissonence is =
+>           let remove p = filter (not . p) in
+>           remove (isDissonent (ePitch hd - absPitch(pc, 0))) is
 >         ints = case ct of
->             Maj -> fifth ++ ninth ++ thirteenth
->             Min -> fifth ++ ninth ++ thirteenth
->             Dim -> flatFifth
->             Aug -> augFifth
->             Maj7 -> fifth ++ ninth ++ thirteenth
->             Min7 -> fifth ++ ninth ++ thirteenth
->             Dom7 -> fifth ++ ninth ++ thirteenth
->             HalfDim7 -> flatFifth
->             Dim7 -> flatFifth
->             MinMaj7 -> fifth
->             AugMaj7 -> fifth
+>             Maj -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>             Min -> remDissonence $ maybeAlt5th ++ maybeAlt9th
+>             Dim -> flat5th
+>             Aug -> sharp5th
+>             Maj7 -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>             Min7 -> remDissonence $ maybeAlt5th ++ nat9th -- ++ nat11th
+>             Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>             HalfDim7 -> flat5th
+>             Dim7 -> flat5th
+>             MinMaj7 -> maybeAlt5th
+>             AugMaj7 -> sharp5th
 >       in
->         case isDiatonicChord context pc ct of
->           True -> filter (isDiatonic context) $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
->           False -> []
+>         case isDiatonicChord context pc ct of -- TODO: handle different cases?
+>           _ -> filter (isDiatonic context) $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
 
