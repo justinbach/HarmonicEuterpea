@@ -44,26 +44,23 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 > bodyAndSoul =
 >   tempo dhn $
 >   Modify (KeySig Df Major) $
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
+>   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
+>   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
 
--->   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
--->   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
--->   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
--->   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
-
--->   ((Modify (Phrase [Chord Df Maj7])) $ af 5 qn :+: (tempo (3 % 2) (af 5 en :+: bf 5 en :+: af 5 en))) :+:
-
+>   ((Modify (Phrase [Chord Df Maj7])) $ af 5 qn :+: (tempo (3 % 2) (af 5 en :+: bf 5 en :+: af 5 en))) :+:
 >   ((Modify (Phrase [Chord Gf Dom7])) $ ef 6 dqn :+: c 6 en) :+:
 >   ((Modify (Phrase [Chord F Min7])) $ ef 6 qn :+: df 6 qn) :+:
->   ((Modify (Phrase [Chord E Dim7])) $ c 6 qn :+: bf 5 qn)
-
--->   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: df 6 qn :+: (tempo (3 % 2) (bf 5 qn :+: gf 5 qn :+: bf 4 qn))) :+:
--->   ((Modify (Phrase [Chord C HalfDim7])) $ f 5 hn) :+:
--->   ((Modify (Phrase [Chord F Dom7])) $ ef 5 hn) :+:
--->   ((Modify (Phrase [Chord Bf Min7])) $ bf 4 en :+: df 5 en) :+:
--->   ((Modify (Phrase [Chord Ef Dom7])) $ ef 5 en :+: f 5 en) :+:
--->   ((Modify (Phrase [Chord Ef Min7])) $ af 5 qn) :+:
--->   ((Modify (Phrase [Chord Af Dom7])) $ (tempo (3 % 2) (af 5 en :+: bf 5 en :+: e 5 en))) :+:
--->   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
+>   ((Modify (Phrase [Chord E Dim7])) $ c 6 qn :+: bf 5 qn) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: df 6 qn :+: (tempo (3 % 2) (bf 5 qn :+: gf 5 qn :+: bf 4 qn))) :+:
+>   ((Modify (Phrase [Chord C HalfDim7])) $ f 5 hn) :+:
+>   ((Modify (Phrase [Chord F Dom7])) $ ef 5 hn) :+:
+>   ((Modify (Phrase [Chord Bf Min7])) $ bf 4 en :+: df 5 en) :+:
+>   ((Modify (Phrase [Chord Ef Dom7])) $ ef 5 en :+: f 5 en) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ af 5 qn) :+:
+>   ((Modify (Phrase [Chord Af Dom7])) $ (tempo (3 % 2) (af 5 en :+: bf 5 en :+: e 5 en))) :+:
+>   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
 
 > whenIFallInLove :: Music Pitch
 > whenIFallInLove =
@@ -199,13 +196,27 @@ This helper function adds harmonic extensions to the voicing. In the case of Dia
 >       [Dim, HalfDim7],
 >       [Dim, HalfDim7]
 >       ]
->     isDiatonic e =
+>     isDiatonic context e = -- function to check whether a note is diatonic in the current context
 >       let
 >         (key, mode) = cKey context
 >         ints = if mode == Major then majorInts else minorInts
 >         ap = ePitch e `mod` 12
 >       in
 >         ap `elem` ints
+
+>     isDiatonicChord context pc ct = -- check whether a chord is diatonic to current context
+>       let
+>         (key, mode) = cKey context
+>         (ints, types) = case mode of
+>                           Major -> (majorInts, majorTypes)
+>                           Minor -> (minorInts, minorTypes)
+>         cap = absPitch (pc, 0)
+>         kap = absPitch (key, 0)
+>         kInts = map (\i -> kap + i `mod` 12) ints
+>       in
+>         case cap `elemIndex` kInts of
+>           Just i  -> ct `elem` (types !! i)
+>           Nothing -> False
 
 TODO: check whether the chord is diatonic to the current key. If it is, use a known set of melody-compatible tensions. If not, err on the side of safety and keep the voicing more skeletal.
 
@@ -234,7 +245,9 @@ TODO: check whether the chord is diatonic to the current key. If it is, use a kn
 >             MinMaj7 -> fifth
 >             AugMaj7 -> fifth
 >       in
->         filter isDiatonic $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+>         case isDiatonicChord context pc ct of
+>           True -> filter (isDiatonic context) $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+>           False -> []
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
 
