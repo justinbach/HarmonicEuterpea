@@ -165,11 +165,24 @@ This helper function adds harmonic extensions to the voicing. In the case of Dia
 >       in
 >         map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
-This helper function ties the various component builders together.
+This helper function removes any notes from the voicing that are pitched higher than the melody.
+
+>     checkMelRange pf chord =
+>         let
+>           isLower e1 e2 res =
+>             if res == False then False else ePitch e1 < ePitch e2
+>           isLowerThanAll pf e = foldr (isLower e) True pf
+>         in
+>           filter (isLowerThanAll pf) chord
+
+
+This helper function ties the various chord component builders together.
 
 >     genChord pf pc ct =
 >       let hd = head pf in
->       (addRoot hd pc ct) ++ dedup hd ((add357 hd pc ct) ++ (addTensions hd pc ct))
+>       checkMelRange pf  ((addRoot hd pc ct) ++
+>                         dedup hd ((add357 hd pc ct) ++
+>                         (addTensions hd pc ct)))
 
 These helper functions modify the notes to be as long as the phrase ("held down")
 
