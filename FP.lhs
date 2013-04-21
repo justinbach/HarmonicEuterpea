@@ -50,7 +50,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 > bodyAndSoul =
 >   tempo dhn $
 >   Modify (KeySig Df Major) $
->   ((Modify (Phrase [Chord Ef Min7])) $ bf 3 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
+>   ((Modify (Phrase [Chord Ef Min7])) $ bf 4 qn :+: (tempo (3 % 2) (ef 5 en :+: f 5 en :+: ef 5 en))) :+:
 >   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 en :+: ef 5 en :+: d 5 en :+: ef 5 en) :+:
 >   ((Modify (Phrase [Chord Ef Min7])) $ bf 5 qn :+: bf 5 qn) :+:
 >   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en) :+:
@@ -68,6 +68,12 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >   ((Modify (Phrase [Chord Af Dom7])) $ (tempo (3 % 2) (af 5 en :+: bf 5 en :+: e 5 en))) :+:
 >   ((Modify (Phrase [Chord Df Maj])) $ df 5 wn)
 
+> bodyAndSoul' :: Music Pitch
+> bodyAndSoul' =
+>   tempo dhn $
+>   Modify (KeySig Df Major) $
+>   ((Modify (Phrase [Chord D Dom7])) $ b 5 dqn :+: a 5 en)
+
 > whenIFallInLove :: Music Pitch
 > whenIFallInLove =
 >   tempo dhn $
@@ -84,9 +90,21 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >           ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
 >           ((Modify (Phrase [Chord Af Dom7])) $ c (oct + 1) qn :+: bf oct qn) :+:
 >           ((Modify (Phrase [Chord Df Dom7])) $ af oct hn) :+:
->           ((Modify (Phrase [Chord C Dom7])) $ g oct hn)
+>           ((Modify (Phrase [Chord C Dom7])) $ g oct hn) :+:
+>           ((Modify (Phrase [Chord F Dom7])) $ f oct hn) :+:
+>           ((Modify (Phrase [Chord B Dom7])) $ f oct hn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ f oct dhn :+: g oct en :+: af oct en)
+>       b = ((Modify (Phrase [Chord Ef Maj7])) $ bf oct dqn :+: ef oct en) :+:
+>           ((Modify (Phrase [Chord A Dom7])) $ ef oct qn :+: ef oct qn) :+:
+>           ((Modify (Phrase [Chord Af Maj7])) $ g oct qn :+: f oct qn) :+:
+>           ((Modify (Phrase [Chord Df Maj7])) $ f oct qn :+: g oct en :+: af oct en) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ (tempo (3 % 2) (bf oct qn :+: g oct qn :+: af oct qn))) :+:
+>           ((Modify (Phrase [Chord Af Maj7])) $ (tempo (3 % 2) (bf oct qn :+: g oct qn :+: af oct qn))) :+:
+>           (Modify (KeySig F Minor) $ -- modulation!
+>           ((Modify (Phrase [Chord G HalfDim7])) $ bf oct hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en))
 >   in
->     a
+>     b
 
 > altTest =
 >   tempo dhn $
@@ -210,7 +228,7 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >         kap = absPitch (key, 0)
 >         kInts = map (\i -> kap + i `mod` 12) ints
 >       in
->         kap `elem` kInts
+>         cap `elem` kInts
 
 >     isDiatonicChord context pc ct = -- check whether a chord is diatonic to current context
 >       let
@@ -229,42 +247,52 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >     isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >       abs ((ap1 `mod` 12) - (ap2 `mod` 12)) == 1
 
+TODO: check whether the chord is diatonic (or perhaps even based on a note in the key scale of the current key). If it is, add diatonic tensions; if not, take the heuristic-based approach outlined below.
+
 >     addTensions hd pc ct =
 >       let
->         diff = abs (ePitch hd `mod` 12) - (absPitch (pc, 0))
->         isAlt9th = diff == 1 || diff == 3 -- is the 9th altered in the melody?
->         isAlt5th = diff == 6 || diff == 8 -- is the 5th altered in the melody?
->         nat5th = [7]
->         flat5th = [6]
->         sharp5th = [8]
->         alt5th = flat5th ++ sharp5th
->         nat9th = [2]
->         flat9th = [1]
->         sharp9th = [3]
->         alt9th = flat9th ++ sharp9th
->         nat11th = [5]
->         nat13th = [9]
->         maybeAlt5th = if isAlt5th then alt5th else nat5th
->         maybeAlt9th = if isAlt9th then alt9th else nat9th
->         maybeAlt13th = if isAlt5th then [] else nat13th
->         remDissonence is =
->           let remove p = filter (not . p) in
->           remove (isDissonent (ePitch hd - absPitch(pc, 0))) is
->         ints = case ct of
->             Maj -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->             Min -> remDissonence $ maybeAlt5th ++ maybeAlt9th
->             Dim -> flat5th
->             Aug -> sharp5th
->             Maj7 -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->             Min7 -> remDissonence $ maybeAlt5th ++ nat9th -- ++ nat11th
->             Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->             HalfDim7 -> flat5th
->             Dim7 -> flat5th
->             MinMaj7 -> maybeAlt5th
->             AugMaj7 -> sharp5th
+>         addHeuristicTensions hd pc ct =
+>           let
+>             diff = abs (ePitch hd `mod` 12) - (absPitch (pc, 0))
+>             isAlt9th = diff == 1 || diff == 3 -- is the 9th altered in the melody?
+>             isAlt5th = diff == 6 || diff == 8 -- is the 5th altered in the melody?
+>             nat5th = [7]
+>             flat5th = [6]
+>             sharp5th = [8]
+>             alt5th = flat5th ++ sharp5th
+>             nat9th = [2]
+>             flat9th = [1]
+>             sharp9th = [3]
+>             alt9th = flat9th ++ sharp9th
+>             nat11th = [5]
+>             nat13th = [9]
+>             maybeAlt5th = if isAlt5th then alt5th else nat5th
+>             maybeAlt9th = if isAlt9th then alt9th else nat9th
+>             maybeAlt13th = if isAlt5th then [] else nat13th
+>             remDissonence is =
+>               let remove p = filter (not . p) in
+>               remove (isDissonent (ePitch hd - absPitch(pc, 0))) is
+>           in
+>             case ct of
+>               Maj -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>               Min -> remDissonence $ maybeAlt5th ++ maybeAlt9th
+>               Dim -> flat5th
+>               Aug -> sharp5th
+>               Maj7 -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>               Min7 -> remDissonence $ maybeAlt5th ++ nat9th ++ nat11th
+>               Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>               HalfDim7 -> flat5th
+>               Dim7 -> flat5th
+>               MinMaj7 -> maybeAlt5th
+>               AugMaj7 -> sharp5th
+>         addDiatonicTensions hd pc ct =
+>           []
+>         ints = case isDiatonic context hd {ePitch = absPitch(pc, 0)} of
+>               True  -> addDiatonicTensions hd pc ct
+>               False -> addHeuristicTensions hd pc ct
 >       in
 >         case isDiatonicChord context pc ct of -- TODO: handle different cases?
->           _ -> filter (isDiatonic context) $ map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
+>           _ ->  map (getTensions pc) $ map (\i -> hd {ePitch = absPitch(pc, 0) + i}) ints
 
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
@@ -299,6 +327,9 @@ This fixes the volume of the harmonic accompaniment to be less than that of the 
 >     fixVols pf ref = map (\e -> e{eVol = 3 * ceiling ((fromIntegral (eVol ref)) / 4) }) pf
 
 And finally, the body of the function adds the voicing to the melody line.
+
+
+TODO: add support for substitutions by passing a modified chord type and pitch class to the helper functions.
 
 >   in
 >     fixVols (fixDurs pf (genChord pf pc ct)) (head pf) ++ pf
