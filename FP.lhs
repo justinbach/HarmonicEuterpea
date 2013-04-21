@@ -247,6 +247,10 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >     isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >       abs ((ap1 `mod` 12) - (ap2 `mod` 12)) == 1
 
+>     remDissonence hd is =
+>       let remove p = filter (not . p) in
+>       remove (isDissonent (ePitch hd - absPitch(pc, 0))) is
+
 TODO: check whether the chord is diatonic (or perhaps even based on a note in the key scale of the current key). If it is, add diatonic tensions; if not, take the heuristic-based approach outlined below.
 
 >     addTensions hd pc ct =
@@ -269,24 +273,38 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >             maybeAlt5th = if isAlt5th then alt5th else nat5th
 >             maybeAlt9th = if isAlt9th then alt9th else nat9th
 >             maybeAlt13th = if isAlt5th then [] else nat13th
->             remDissonence is =
->               let remove p = filter (not . p) in
->               remove (isDissonent (ePitch hd - absPitch(pc, 0))) is
 >           in
 >             case ct of
->               Maj -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->               Min -> remDissonence $ maybeAlt5th ++ maybeAlt9th
+>               Maj -> remDissonence hd $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>               Min -> remDissonence hd $ maybeAlt5th ++ maybeAlt9th
 >               Dim -> flat5th
 >               Aug -> sharp5th
->               Maj7 -> remDissonence $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->               Min7 -> remDissonence $ maybeAlt5th ++ nat9th ++ nat11th
+>               Maj7 -> remDissonence hd $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>               Min7 -> remDissonence hd $ maybeAlt5th ++ nat9th ++ nat11th
 >               Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
 >               HalfDim7 -> flat5th
 >               Dim7 -> flat5th
 >               MinMaj7 -> maybeAlt5th
 >               AugMaj7 -> sharp5th
 >         addDiatonicTensions hd pc ct =
->           []
+>           let
+>             diatonic5th = [7]
+>             diatonic9th = [2]
+>             diatonic11th = [4]
+>             diatonic13th = [9]
+>           in
+>             case ct of
+>               Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
+>               Min -> remDissonence hd $ diatonic5th ++diatonic9th
+>               Dim -> diatonic5th
+>               Aug -> diatonic5th
+>               Maj7 -> remDissonence hd $ diatonic5th ++ diatonic9th ++ diatonic13th
+>               Min7 -> remDissonence hd $ diatonic5th ++ diatonic9th ++ diatonic11th
+>               Dom7 -> diatonic5th ++ diatonic9th ++ diatonic13th
+>               HalfDim7 -> diatonic5th
+>               Dim7 -> diatonic5th
+>               MinMaj7 ->diatonic5th
+>               AugMaj7 -> diatonic5th
 >         ints = case isDiatonic context hd {ePitch = absPitch(pc, 0)} of
 >               True  -> addDiatonicTensions hd pc ct
 >               False -> addHeuristicTensions hd pc ct
