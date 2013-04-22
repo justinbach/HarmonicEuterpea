@@ -43,7 +43,7 @@ This section handles the creation of a few lead sheets for testing.
 > somewhere' =
 >   tempo dhn $
 >   Modify (KeySig Ef Major) $
->   ((Modify (Phrase [Chord Ef Maj7])) $ ef 6 hn)
+>   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn)
 
 Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note that would be masked by the voicing. This musical "hack" is used several times over the course of the piece.
 
@@ -221,13 +221,16 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >       [Maj, Maj7],
 >       [Dim, Dim7]
 >       ]
+
+TODO: refactor following functions to eliminate redundancy
+
 >     isDiatonic context e = -- function to check whether a note is diatonic in the current context
 >       let
 >         (key, mode) = cKey context
 >         ints = if mode == Major then majorInts else minorInts
 >         cap = ePitch e `mod` 12
 >         kap = absPitch (key, 0)
->         kInts = map (\i -> kap + i `mod` 12) ints
+>         kInts = map (\i -> (kap + i) `mod` 12) ints
 >       in
 >         cap `elem` kInts
 
@@ -239,22 +242,20 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >                           Minor -> (minorInts, minorTypes)
 >         cap = absPitch (pc, 0)
 >         kap = absPitch (key, 0)
->         kInts = map (\i -> kap + i `mod` 12) ints
+>         kInts = map (\i -> (kap + i) `mod` 12) ints
 >       in
 >         case cap `elemIndex` kInts of
 >           Just i  -> ct `elem` (types !! i)
 >           Nothing -> False
 
 >     isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
->       abs ((ap1 `mod` 12) - (ap2 `mod` 12)) == 1
+>       abs ((ap1 `mod` 12) - (ap2 `mod` 12)) `elem` [1, 10]
 
 TODO: fix up to remove half-step differences with bass as well as melody
 
 >     remDissonence mel root is =
 >       let remove p = filter (not . p) in
-
 >       remove (isDissonent (ePitch root - absPitch(pc, 0))) $
-
 >       remove (isDissonent (ePitch mel - absPitch(pc, 0))) is
 
 TODO: check whether the chord is diatonic (or perhaps even based on a note in the key scale of the current key). If it is, add diatonic tensions; if not, take the heuristic-based approach outlined below.
@@ -277,8 +278,8 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >             alt9th = flat9th ++ sharp9th
 >             nat11th = [5]
 >             nat13th = [9]
->             maybeAlt5th = if isAlt5th then flat5th else nat5th
->             maybeAlt9th = if isAlt9th then flat9th else nat9th
+>             maybeAlt5th = if isAlt5th then flat5th else nat5th -- TODO: use sharp5th? sometimes?
+>             maybeAlt9th = if isAlt9th then flat9th else nat9th -- TODO: use sharp9th? sometimes?
 >             maybeAlt13th = if isAlt5th then sharp5th else nat13th
 >           in
 >             case ct of
@@ -287,7 +288,7 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >               Dim -> flat5th
 >               Aug -> sharp5th
 >               Maj7 -> remDissonence mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->               Min7 -> remDissonence mel root $ maybeAlt5th ++ nat9th ++ nat11th
+>               Min7 -> remDissonence mel root $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
 >               Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
 >               HalfDim7 -> flat5th
 >               Dim7 -> flat5th
@@ -301,7 +302,7 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >                           Minor -> (minorInts, minorTypes)
 >             cap = absPitch (pc, 0)
 >             kap = absPitch (key, 0)
->             kInts = map (\i -> kap + i `mod` 12) ints
+>             kInts = map (\i -> (kap + i) `mod` 12) ints
 >             scaleDegree = fromJust $ cap `elemIndex` kInts -- safe if cap is diatonic!
 >             getOffset o = (ints !! ((scaleDegree + o) `mod` (length ints)))
 >                            - (ints !! scaleDegree)
@@ -312,7 +313,7 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >           in
 >             case ct of
 >               Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
->               Min -> remDissonence mel root $ diatonic5th ++diatonic9th
+>               Min -> remDissonence mel root $ diatonic5th ++ diatonic9th
 >               Dim -> diatonic5th
 >               Aug -> diatonic5th
 >               Maj7 -> remDissonence mel root $ diatonic5th ++ diatonic9th ++ diatonic13th
@@ -326,8 +327,7 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >               True  -> addDiatonicTensions mel pc ct
 >               False -> addHeuristicTensions mel pc ct
 >       in
->         case isDiatonicChord context pc ct of -- TODO: handle different cases?
->           _ ->  map (getTensions pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints
+>       map (getTensions pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
 
@@ -344,8 +344,8 @@ This helper function ties the various chord component builders together.
 >     genChord pf pc ct =
 >       let mel = head pf in
 >       checkMelRange pf  ((addRoot mel pc ct) ++
->                         dedup mel ((add37 mel pc ct) ++
->                         (addTensions mel pc ct)))
+>                         (add37 mel pc ct) ++
+>                         dedup mel (addTensions mel pc ct))
 
 These helper functions modify the notes to be as long as the phrase ("held down")
 
@@ -372,6 +372,9 @@ Example of usage:
 
 *FP> perform myPMap defCon $ toMusic1 $ Modify (Player "DiatonicPlayer") $ somewhere
 
+
+TODO: remove
+
 > cap = absPitch (Ef, 0)
 > kap = absPitch (Df, 0)
 
@@ -379,3 +382,48 @@ Example of usage:
 > kInts = map (\i -> (kap + i) `mod` 12) ints
 
 > scaleDegree = fromJust $ cap `elemIndex` kInts
+
+
+> majorInts = [0, 2, 4, 5, 7, 9, 11] -- major scale
+> majorTypes = [ -- the possible triads and seventh chords built on each scale degree
+>   [Maj, Maj7],
+>   [Min, Min7],
+>   [Min, Min7],
+>   [Maj, Maj7],
+>   [Maj, Dom7],
+>   [Min, Min7],
+>   [Dim, HalfDim7]
+>   ]
+>
+> minorInts = [0, 2, 3, 5, 7, 8, 11] -- harmonic
+> minorTypes = [
+>   [Min, MinMaj7],
+>   [Dim, HalfDim7],
+>   [Maj, AugMaj7],
+>   [Min, Min7],
+>   [Maj, Dom7],
+>   [Maj, Maj7],
+>   [Dim, Dim7]
+>   ]
+> isDiatonic context e = -- function to check whether a note is diatonic in the current ext
+>   let
+>     (key, mode) = cKey context
+>     ints = if mode == Major then majorInts else minorInts
+>     cap = ePitch e `mod` 12
+>     kap = absPitch (key, 0)
+>     kInts = map (\i -> kap + i `mod` 12) ints
+>   in
+>     cap `elem` kInts
+
+> isDiatonicChord (key, mode) pc ct = -- check whether a chord is diatonic to current context
+>   let
+>     (ints, types) = case mode of
+>                       Major -> (majorInts, majorTypes)
+>                       Minor -> (minorInts, minorTypes)
+>     cap = absPitch (pc, 0)
+>     kap = absPitch (key, 0)
+>     kInts = map (\i -> (kap + i) `mod` 12) ints
+>   in
+>     case cap `elemIndex` kInts of
+>       Just i  -> ct `elem` (types !! i)
+>       Nothing -> False
