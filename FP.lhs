@@ -73,7 +73,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 > bodyAndSoul' =
 >   tempo dhn $
 >   Modify (KeySig Df Major) $
->   ((Modify (Phrase [Chord F Min7])) $ ef 6 hn)
+>   ((Modify (Phrase [Chord Bf Dom7])) $ f 5 hn)
 
 > whenIFallInLove :: Music Pitch
 > whenIFallInLove =
@@ -105,7 +105,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >           ((Modify (Phrase [Chord G HalfDim7])) $ bf oct hn) :+:
 >           ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en))
 >   in
->     b
+>     a :+: b
 
 > altTest =
 >   tempo dhn $
@@ -277,9 +277,9 @@ TODO: check whether the chord is diatonic (or perhaps even based on a note in th
 >             alt9th = flat9th ++ sharp9th
 >             nat11th = [5]
 >             nat13th = [9]
->             maybeAlt5th = if isAlt5th then alt5th else nat5th
->             maybeAlt9th = if isAlt9th then alt9th else nat9th
->             maybeAlt13th = if isAlt5th then [] else nat13th
+>             maybeAlt5th = if isAlt5th then flat5th else nat5th
+>             maybeAlt9th = if isAlt9th then flat9th else nat9th
+>             maybeAlt13th = if isAlt5th then sharp5th else nat13th
 >           in
 >             case ct of
 >               Maj -> remDissonence mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
