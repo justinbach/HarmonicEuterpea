@@ -102,11 +102,14 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >           ((Modify (Phrase [Chord G HalfDim7])) $ bf oct hn) :+:
 >           ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en))
 >   in
->     a :+: b
+>     b
 
-> altTest =
+TODO: What is going on here?
+
+> whenIFallInLove' :: Music Pitch
+> whenIFallInLove' =
 >   tempo dhn $
->   Modify (KeySig Ef Major) $
->   let oct = 5 in
->   ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn)
+>   Modify (KeySig F Minor) $
+>   ((Modify (Phrase [Chord C Dom7]) $ bf 5 qn :+: af 5 en :+: bf 5 en))
+
 

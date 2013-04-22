@@ -32,8 +32,11 @@ The code in this file constructs a few players, which use the functions for crea
 >       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
 >     in
 >       case pa of
->         ch@(Chord pc ct) -> (myPasChordHandler ch c pf, dur)
+>         ch@(Chord pc ct) -> (myDiatonicChordHandler ch c pf, dur)
 >         _ -> pfd
+
+> myDiatonicChordHandler (Chord pc ct) context pf =
+>     fixVols (fixDurs pf (genChord context pf pc ct)) (head pf) ++ pf
 
 TODO: add more players:
 - CleanPlayer - just plays 3rd and seventh, and occasionally fifth (maybe)
