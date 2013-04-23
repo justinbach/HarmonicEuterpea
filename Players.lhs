@@ -16,6 +16,34 @@ The code in this file constructs a few players, which use the functions for crea
 
 > myPMap                       :: PlayerName -> Player Note1
 > myPMap "DiatonicPlayer"      = diatonicPlayer
+> myPMap "CleanPlayer"         = cleanPlayer
+
+
+This player cleanly interprets underlying harmony without adding any color tones.
+
+> cleanPlayer :: Player (Pitch, [NoteAttribute])
+> cleanPlayer =  defPlayer
+>               {pName        = "CleanPlayer",
+>                interpPhrase = cleanInterpPhrase}
+
+> cleanInterpPhrase :: PhraseFun a
+> cleanInterpPhrase pm c [] m = perf pm c m
+> cleanInterpPhrase pm
+>   c@Context {cTime = t, cPlayer = pl, cInst = i,
+>              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
+>   (pa:pas) m =
+>     let
+>       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>       genChord context pf pc ct =
+>         let mel = head pf in
+>         checkMelRange pf ((addRoot mel pc ct) ++ (add37 mel pc ct))
+>       myCleanChordHandler (Chord pc ct) context pf =
+>           fixVols (fixDurs pf (genChord context pf pc ct)) (head pf) ++ pf
+>     in
+>       case pa of
+>         ch@(Chord pc ct) -> (myCleanChordHandler ch c pf, dur)
+>         _ -> pfd
+
 
 > diatonicPlayer :: Player (Pitch, [NoteAttribute])
 > diatonicPlayer =  defPlayer
@@ -30,13 +58,18 @@ The code in this file constructs a few players, which use the functions for crea
 >   (pa:pas) m =
 >     let
 >       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>       genChord context pf pc ct =
+>         let mel = head pf in
+>         checkMelRange pf  ((addRoot mel pc ct) ++
+>                           (add37 mel pc ct) ++
+>                           dedup mel (addTensions context mel pc ct))
+>       myDiatonicChordHandler (Chord pc ct) context pf =
+>           fixVols (fixDurs pf (genChord context pf pc ct)) (head pf) ++ pf
 >     in
 >       case pa of
 >         ch@(Chord pc ct) -> (myDiatonicChordHandler ch c pf, dur)
 >         _ -> pfd
 
-> myDiatonicChordHandler (Chord pc ct) context pf =
->     fixVols (fixDurs pf (genChord context pf pc ct)) (head pf) ++ pf
 
 TODO: add more players:
 - CleanPlayer - just plays 3rd and seventh, and occasionally fifth (maybe)

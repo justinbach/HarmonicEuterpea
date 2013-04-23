@@ -239,15 +239,6 @@ This helper function removes any notes from the voicing that are pitched higher 
 >     in
 >       filter (isLowerThanAll pf) chord
 
-This helper function ties the various chord component builders together.
-
-> genChord                  :: Context a -> [Event] -> PitchClass -> ChordType -> [Event]
-> genChord context pf pc ct =
->   let mel = head pf in
->   checkMelRange pf  ((addRoot mel pc ct) ++
->                     (add37 mel pc ct) ++
->                     dedup mel (addTensions context mel pc ct))
-
 These helper functions modify the notes to be as long as the phrase ("held down")
 
 > maxTime          :: (Ratio Integer, Event) -> Ratio Integer -> Ratio Integer
