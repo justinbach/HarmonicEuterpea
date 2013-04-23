@@ -15,8 +15,8 @@ Final Project
 The code in this file constructs a few players, which use the functions for creating voicings in interesting and different ways.
 
 > myPMap                       :: PlayerName -> Player Note1
-> myPMap "DiatonicPlayer"      = diatonicPlayer
 > myPMap "CleanPlayer"         = cleanPlayer
+> myPMap "RichPlayer"          = richPlayer
 
 
 This player cleanly interprets underlying harmony without adding any color tones.
@@ -45,14 +45,14 @@ This player cleanly interprets underlying harmony without adding any color tones
 >         _ -> pfd
 
 
-> diatonicPlayer :: Player (Pitch, [NoteAttribute])
-> diatonicPlayer =  defPlayer
->               {pName        = "DiatonicPlayer",
->                interpPhrase = diatonicInterpPhrase}
+> richPlayer :: Player (Pitch, [NoteAttribute])
+> richPlayer =  defPlayer
+>               {pName        = "RichPlayer",
+>                interpPhrase = richInterpPhrase}
 
-> diatonicInterpPhrase :: PhraseFun a
-> diatonicInterpPhrase pm c [] m = perf pm c m
-> diatonicInterpPhrase pm
+> richInterpPhrase :: PhraseFun a
+> richInterpPhrase pm c [] m = perf pm c m
+> richInterpPhrase pm
 >   c@Context {cTime = t, cPlayer = pl, cInst = i,
 >              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
 >   (pa:pas) m =
@@ -63,11 +63,11 @@ This player cleanly interprets underlying harmony without adding any color tones
 >         checkMelRange pf  ((addRoot mel pc ct) ++
 >                           (add37 mel pc ct) ++
 >                           dedup mel (addTensions context mel pc ct))
->       myDiatonicChordHandler (Chord pc ct) context pf =
+>       myRichChordHandler (Chord pc ct) context pf =
 >           fixVols (fixDurs pf (genChord context pf pc ct)) (head pf) ++ pf
 >     in
 >       case pa of
->         ch@(Chord pc ct) -> (myDiatonicChordHandler ch c pf, dur)
+>         ch@(Chord pc ct) -> (myRichChordHandler ch c pf, dur)
 >         _ -> pfd
 
 

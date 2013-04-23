@@ -26,3 +26,6 @@ Use the "clean" player to perform a melody.
 > playClean :: Music Pitch -> IO ()
 > playClean m = playPlayer "CleanPlayer" m
 
+> playRich :: Music Pitch -> IO ()
+> playRich m = playPlayer "RichPlayer" m
+

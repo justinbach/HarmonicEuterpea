@@ -3,38 +3,51 @@ NetID:  jpb55
 Class:  CPSC-531
 Date:   4/15/13
 
-Final Project
+This file contains a few "lead sheets" to be performed by various players.
 
 > module LeadSheets where
 > import Euterpea
 > import Data.Ratio
 
-This file serves to demonstrate some of the uses of the new Chord PhraseAttribute I've added to Music.hs. In particular, it creates several chord-tagged melodies, equivalent to a lead sheet, and constructs a few different players that perform them, interpreting the underlying harmony in different ways.
-
-
-
-This file contains a few "lead sheets" to be performed by various players.
-
 > somewhere :: Music Pitch
 > somewhere =
->   tempo dhn $
+>   tempo wn $
 >   Modify (KeySig Ef Major) $
->   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 hn) :+:
->   ((Modify (Phrase [Chord C Min7])) $ ef 6 hn) :+:
->   ((Modify (Phrase [Chord G Min7])) $ d 6 dqn :+: bf 5 sn :+: c 6 sn) :+:
->   ((Modify (Phrase [Chord Bf Dom7])) $ d 6 qn) :+:
->   ((Modify (Phrase [Chord Ef Dom7])) $ ef 6 qn) :+:
->   ((Modify (Phrase [Chord Af Maj7])) $ ef 5 hn) :+:
->   ((Modify (Phrase [Chord A Dim7])) $ c 6 hn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ bf 5 wn) :+:
->   ((Modify (Phrase [Chord Af Maj7])) $ c 5 hn) :+:
->   ((Modify (Phrase [Chord Af Min])) $ af 5 hn) :+:
->   ((Modify (Phrase [Chord G Min7])) $ g 5 dqn :+: ef 5 sn :+: f 5 sn) :+:
->   ((Modify (Phrase [Chord C Dom7])) $ g 5 qn :+: gs 5 qn) :+:
->   ((Modify (Phrase [Chord F Dom7])) $ f 5 dqn :+: d 5 sn :+: ef 5 sn) :+:
->   ((Modify (Phrase [Chord F Min7])) $ f 5 qn) :+:
->   ((Modify (Phrase [Chord Bf Dom7])) $ g 5 qn) :+:
->   ((Modify (Phrase [Chord Ef Maj])) $ ef 5 wn)
+>   let oct = 5::Octave
+>       octU1 = oct + 1
+>       octU2 = oct + 2
+>       a' = ((Modify (Phrase [Chord Ef Maj])) $ ef oct hn) :+:
+>           ((Modify (Phrase [Chord C Min7])) $ ef octU1 hn) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ d octU1 dqn :+: bf oct sn :+: c octU1 sn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ d octU1 qn) :+:
+>           ((Modify (Phrase [Chord Ef Dom7])) $ ef octU1 qn) :+:
+>           ((Modify (Phrase [Chord Af Maj7])) $ ef oct hn) :+:
+>           ((Modify (Phrase [Chord A Dim7])) $ c octU1 hn) :+:
+>           ((Modify (Phrase [Chord Ef Maj])) $ bf oct wn) :+:
+>           ((Modify (Phrase [Chord Af Maj7])) $ c oct hn) :+:
+>           ((Modify (Phrase [Chord Af Min])) $ af oct hn) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ g oct dqn :+: ef oct sn :+: f oct sn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ g oct qn :+: gs oct qn) :+:
+>           ((Modify (Phrase [Chord F Dom7])) $ f oct dqn :+: d oct sn :+: ef oct sn) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ f oct qn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ g oct qn) :+:
+>           ((Modify (Phrase [Chord Ef Maj])) $ ef oct wn)
+>       b' = ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g octU1 en :+: bf octU1 en)) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ timesM 2 (af octU1 en :+: bf octU1 en)) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ timesM 2 (af octU1 en :+: bf octU1 en)) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ c octU2 hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ c octU2 hn) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ af oct hn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ bf oct dqn :+: bf octU1 en) :+:
+>           ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g octU1 en :+: bf octU1 en)) :+:
+>           ((Modify (Phrase [Chord A HalfDim7])) $ timesM 2 (a octU1 en :+: c octU2 en)) :+:
+>           ((Modify (Phrase [Chord D Dom7])) $ timesM 2 (a octU1 en :+: c octU2 en)) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ d octU2 hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ d octU2 hn) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ f octU2 hn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ c octU2 hn)
+>   in
+>     a' :+: a' :+: b' :+: a'
 
 > somewhere' :: Music Pitch
 > somewhere' =
