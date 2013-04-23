@@ -125,14 +125,10 @@ The following functions add harmonic extensions to the voicing. In the case of D
 > isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >   abs ((ap1 `mod` 12) - (ap2 `mod` 12)) `elem` [1] -- can be adjusted by adding more elements
 
-
-> -- TODO: figure out what i was thinking with this function; what is pc?
-> remDissonence mel root is =
->   let remove p = filter (not . p) in is
-
-TODO: uncomment and fix
--->   remove (isDissonent (ePitch root - absPitch(pc, 0))) $
--->   remove (isDissonent (ePitch mel - absPitch(pc, 0))) is
+> remDissonence pc mel root is =
+>   let remove p = filter (not . p) in
+>       remove (isDissonent (ePitch root - absPitch(pc, 0))) $
+>       remove (isDissonent (ePitch mel - absPitch(pc, 0))) is
 
 > addTensions context mel pc ct =
 >   let
@@ -157,12 +153,12 @@ TODO: uncomment and fix
 >         maybeAlt13th = if isAlt5th then sharp5th else nat13th
 >       in
 >         case ct of
->           Maj -> remDissonence mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->           Min -> remDissonence mel root $ maybeAlt5th ++ maybeAlt9th
+>           Maj -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>           Min -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th
 >           Dim -> flat5th
 >           Aug -> sharp5th
->           Maj7 -> remDissonence mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->           Min7 -> remDissonence mel root $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
+>           Maj7 -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>           Min7 -> remDissonence pc mel root $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
 >           Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
 >           HalfDim7 -> flat5th
 >           Dim7 -> flat5th
@@ -190,11 +186,11 @@ TODO: uncomment and fix
 >       in
 >         case ct of
 >           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
->           Min -> remDissonence mel root $ diatonic5th ++ diatonic9th
+>           Min -> remDissonence pc mel root $ diatonic5th ++ diatonic9th
 >           Dim -> diatonic5th
 >           Aug -> diatonic5th
->           Maj7 -> remDissonence mel root $ diatonic5th ++ diatonic9th ++ diatonic13th
->           Min7 -> remDissonence mel root $ diatonic5th ++ diatonic9th ++ diatonic11th
+>           Maj7 -> remDissonence pc mel root $ diatonic5th ++ diatonic9th ++ diatonic13th
+>           Min7 -> remDissonence pc mel root $ diatonic5th ++ diatonic9th ++ diatonic11th
 >           Dom7 -> diatonic5th ++ diatonic9th ++ diatonic13th
 >           HalfDim7 -> diatonic5th
 >           Dim7 -> diatonic5th
