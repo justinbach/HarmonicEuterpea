@@ -14,16 +14,16 @@ Final Project
 
 TODO: add file description
 
-TODO: add top-level type signatures throughout
-
 This helper function is used in assessing what notes to include in a voicing, given the melody line.
 
+> areSamePC          :: (Event, Event) -> Bool
 > areSamePC (e1, e2) =
 >   let ((pc, _),(pc', _)) = (pitch (ePitch e1), pitch (ePitch e2)) in
 >   pc' == pc
 
 This helper function is used to remove from a voicing any pitch already in the melody.
 
+> dedup        :: Event -> [Event] -> [Event]
 > dedup mel ns =
 >       map (\(x, y) -> y) $ filter (not . areSamePC)
 >         $ zip (replicate (length ns) mel) ns
@@ -34,23 +34,31 @@ Root    : (A, 2)
 3&7     : (D, 4)
 Tensions: (G, 4)
 
-> aboveThreshold threshold e =
+> getAboveThreshold             :: Pitch -> Event -> Event
+> getAboveThreshold threshold e =
 >   case compare (ePitch e) (absPitch threshold) of
->     LT -> aboveThreshold threshold e {ePitch = ePitch e + 12}
+>     LT -> getAboveThreshold threshold e {ePitch = ePitch e + 12}
 >     _  -> e {ePitch = ePitch e}
 
-> getRoot pc e = aboveThreshold (A, 2) e
-> get37 pc e = aboveThreshold (D, 4) e
-> getTensions pc e = aboveThreshold (G, 4) e
+> getRoot      :: PitchClass -> Event -> Event
+> getRoot pc e = getAboveThreshold (A, 2) e
+
+> get37      :: PitchClass -> Event -> Event
+> get37 pc e = getAboveThreshold (D, 4) e
+
+> getTensions      :: PitchClass -> Event -> Event
+> getTensions pc e = getAboveThreshold (G, 4) e
 
 
 This helper function adds the root to the harmonic voicing.
 
+> addRoot           :: Event -> PitchClass -> ChordType -> [Event]
 > addRoot mel pc ct = [getRoot pc mel {ePitch = absPitch (pc, 0)}]
 
 
 This helper function adds the core non-root chord tones to the voicing. Note that this only addresses 3rd and 7ths (where applicable); inclusion of the 5th should be determined on the basis of the melody, and so is classified as a tension.
 
+> add37           :: Event -> PitchClass -> ChordType -> [Event]
 > add37 mel pc ct =
 >   let ints = case ct of
 >         Maj -> [4]
@@ -69,7 +77,10 @@ This helper function adds the core non-root chord tones to the voicing. Note tha
 
 The following functions add harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
 
+> majorInts :: [AbsPitch]
 > majorInts = [0, 2, 4, 5, 7, 9, 11] -- major scale
+
+> majorTypes :: [[ChordType]]
 > majorTypes = [ -- the possible triads and seventh chords built on each scale degree
 >   [Maj, Maj7],
 >   [Min, Min7],
@@ -79,7 +90,11 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >   [Min, Min7],
 >   [Dim, HalfDim7]
 >   ]
+
+> minorInts :: [AbsPitch]
 > minorInts = [0, 2, 3, 5, 7, 8, 11] -- harmonic
+
+> minorTypes :: [[ChordType]]
 > minorTypes = [
 >   [Min, MinMaj7],
 >   [Dim, HalfDim7],
@@ -90,16 +105,21 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >   [Dim, Dim7]
 >   ]
 
+> getMode         :: Context a -> Mode
 > getMode context = snd $ cKey context
 
+> getKey         :: Context a -> PitchClass
 > getKey context = fst $ cKey context
 
+> getInts         :: Context a -> [AbsPitch]
 > getInts context =
 >   if getMode context == Major then majorInts else minorInts
 
+> getTypes         :: Context a -> [[ChordType]]
 > getTypes context =
 >   if getMode context == Major then majorTypes else minorTypes
 
+> getScaleIndex            :: Context a -> PitchClass -> Maybe Int
 > getScaleIndex context pc =
 >   let
 >     ints = getInts context
@@ -109,11 +129,13 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >   in
 >     cap `elemIndex` kInts
 
+> isDiatonic           :: Context a -> Event -> Bool
 > isDiatonic context e = -- function to check whether a note is diatonic in the current context
 >   case getScaleIndex context (fst $ pitch (ePitch e)) of
 >   Just _ -> True
 >   Nothing -> False
 
+> isDiatonicChord      :: Context a -> PitchClass -> ChordType -> Bool
 > isDiatonicChord context pc ct = -- check whether a chord is diatonic to current context
 >   let
 >     (ints, types) = (getInts context, getTypes context)
@@ -122,14 +144,17 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >       Just i  -> ct `elem` (types !! i)
 >       Nothing -> False
 
+> isDissonent         :: AbsPitch -> AbsPitch -> Bool
 > isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >   abs ((ap1 `mod` 12) - (ap2 `mod` 12)) `elem` [1] -- can be adjusted by adding more elements
 
+> remDissonence                :: PitchClass -> Event -> Event -> [AbsPitch] -> [AbsPitch]
 > remDissonence pc mel root is =
 >   let remove p = filter (not . p) in
 >       remove (isDissonent (ePitch root - absPitch(pc, 0))) $
 >       remove (isDissonent (ePitch mel - absPitch(pc, 0))) is
 
+> addTensions                   :: Context a -> Event -> PitchClass -> ChordType -> [Event]
 > addTensions context mel pc ct =
 >   let
 >     root = head $ addRoot mel pc ct
@@ -205,6 +230,7 @@ The following functions add harmonic extensions to the voicing. In the case of D
 
 This helper function removes any notes from the voicing that are pitched higher than the melody.
 
+> checkMelRange          :: [Event] -> [Event] -> [Event]
 > checkMelRange pf chord =
 >     let
 >       isLower e1 e2 res =
@@ -215,6 +241,7 @@ This helper function removes any notes from the voicing that are pitched higher 
 
 This helper function ties the various chord component builders together.
 
+> genChord                  :: Context a -> [Event] -> PitchClass -> ChordType -> [Event]
 > genChord context pf pc ct =
 >   let mel = head pf in
 >   checkMelRange pf  ((addRoot mel pc ct) ++
@@ -223,19 +250,18 @@ This helper function ties the various chord component builders together.
 
 These helper functions modify the notes to be as long as the phrase ("held down")
 
+> maxTime          :: (Ratio Integer, Event) -> Ratio Integer -> Ratio Integer
 > maxTime (s, e) t = max (((eTime e) - s) + (eDur e)) t
+
+> pfLength    :: [Event] -> Ratio Integer
 > pfLength pf = foldr maxTime 0 (zip (replicate (length pf) (eTime (head pf))) pf)
 
+> fixDurs       :: [Event] -> [Event] -> [Event]
 > fixDurs pf es =
 >   let pfDur = pfLength pf in
 >   map (\e -> e {eDur = pfDur}) es
 
 This fixes the volume of the harmonic accompaniment to be less than that of the melody.
 
+> fixVols        :: [Event] -> Event -> [Event]
 > fixVols pf ref = map (\e -> e{eVol = 3 * ceiling ((fromIntegral (eVol ref)) / 4) }) pf
-
-And finally, the body of the function adds the voicing to the melody line.
-
-
-TODO: add support for substitutions by passing a modified chord type and pitch class to the helper functions.
-
