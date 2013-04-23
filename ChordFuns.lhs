@@ -133,6 +133,7 @@ The following functions add harmonic extensions to the voicing. In the case of D
 > addTensions context mel pc ct =
 >   let
 >     root = head $ addRoot mel pc ct
+>     remDissonence' = remDissonence pc mel root
 >     addHeuristicTensions mel pc ct =
 >       let
 >         diff = abs (ePitch mel `mod` 12) - (absPitch (pc, 0))
@@ -153,12 +154,12 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >         maybeAlt13th = if isAlt5th then sharp5th else nat13th
 >       in
 >         case ct of
->           Maj -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->           Min -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th
+>           Maj -> remDissonence' $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>           Min -> remDissonence' $ maybeAlt5th ++ maybeAlt9th
 >           Dim -> flat5th
 >           Aug -> sharp5th
->           Maj7 -> remDissonence pc mel root $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->           Min7 -> remDissonence pc mel root $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
+>           Maj7 -> remDissonence' $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>           Min7 -> remDissonence' $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
 >           Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
 >           HalfDim7 -> flat5th
 >           Dim7 -> flat5th
@@ -186,11 +187,11 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >       in
 >         case ct of
 >           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
->           Min -> remDissonence pc mel root $ diatonic5th ++ diatonic9th
+>           Min -> remDissonence' $ diatonic5th ++ diatonic9th
 >           Dim -> diatonic5th
 >           Aug -> diatonic5th
->           Maj7 -> remDissonence pc mel root $ diatonic5th ++ diatonic9th ++ diatonic13th
->           Min7 -> remDissonence pc mel root $ diatonic5th ++ diatonic9th ++ diatonic11th
+>           Maj7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic13th
+>           Min7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic11th
 >           Dom7 -> diatonic5th ++ diatonic9th ++ diatonic13th
 >           HalfDim7 -> diatonic5th
 >           Dim7 -> diatonic5th
