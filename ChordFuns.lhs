@@ -183,17 +183,20 @@ TODO: remove
 > isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >   abs ((ap1 `mod` 12) - (ap2 `mod` 12)) `elem` [1] -- can be adjusted by adding more elements
 
-> remDissonence                :: PitchClass -> Event -> Event -> [AbsPitch] -> [AbsPitch]
-> remDissonence pc mel root is =
+> remDissonence         :: PitchClass -> Event -> [AbsPitch] -> [AbsPitch]
+> remDissonence pc e is =
 >   let remove p = filter (not . p) in
->       remove (isDissonent (ePitch root - absPitch(pc, 0))) $
->       remove (isDissonent (ePitch mel - absPitch(pc, 0))) is
+>       remove (isDissonent (ePitch e - absPitch(pc, 0))) is
 
-> addTensions                   :: Context a -> Event -> PitchClass -> ChordType -> [Event]
+> remDissonenceMelRoot :: PitchClass -> Event -> Event -> [AbsPitch] -> [AbsPitch]
+> remDissonenceMelRoot pc mel root is =
+>   remDissonence pc root $ remDissonence pc mel is
+
+> addTensions :: Context a -> Event -> PitchClass -> ChordType -> [Event]
 > addTensions context mel pc ct =
 >   let
 >     root = head $ addRoot mel pc ct
->     remDissonence' = remDissonence pc mel root
+>     remDissonence' = remDissonenceMelRoot pc mel root
 >     addHeuristicTensions mel pc ct =
 >       let
 >         diff = abs (ePitch mel `mod` 12) - (absPitch (pc, 0))
@@ -234,7 +237,10 @@ TODO: remove
 >         diatonic5th = [getOffset 4]
 >         diatonic9th = [getOffset 1]
 >         diatonic11th = [getOffset 3]
->         diatonic13th = remDissonence' [getOffset 5] -- don't conflict with melody or root
+>         -- avoid clashes between natural and sharp 5
+>         diatonic13th = case isDissonent (getOffset 5) (head diatonic5th) of
+>                         True -> []
+>                         False -> [getOffset 5]
 >       in
 >         case ct of
 >           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
@@ -249,9 +255,7 @@ TODO: remove
 >           MinMaj7 ->diatonic5th
 >           AugMaj7 -> diatonic5th
 >     ints = case getScaleIndex context pc of
-
 >           Just _ -> addDiatonicTensions mel pc ct
-
 >           Nothing -> addHeuristicTensions mel pc ct
 >   in
 >   map (getTensions pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints

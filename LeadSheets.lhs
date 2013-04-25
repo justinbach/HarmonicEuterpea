@@ -49,14 +49,16 @@ This file contains a few "lead sheets" to be performed by various players.
 >           ((Modify (Phrase [Chord F Min7])) $ f octU2 hn) :+:
 >           ((Modify (Phrase [Chord Bf Dom7])) $ c octU2 hn)
 >   in
->     a' -- :+: a'' :+: b' :+: a'
+>     a' :+: a'' :+: b' :+: a'
 
 > somewhereOverTheRainbow' :: Music Pitch
 > somewhereOverTheRainbow' =
->   let oct = 5 in
+>   let oct = 5
+>       octU2 = oct + 2
+>   in
 >   Modify (KeySig Ef Major) $
 >   tempo dhn $
->           ((Modify (Phrase [Chord C Dom7])) $ g oct qn :+: gs oct qn)
+>           ((Modify (Phrase [Chord C Dom7])) $ d octU2 hn)
 
 
 
@@ -155,7 +157,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >            ((Modify (Phrase [Chord G HalfDim7])) $ bf oct hn) :+:
 >            ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en))
 >   in
->     b'
+>     a' :+: b'
 
 TODO: What is going on here?
 
