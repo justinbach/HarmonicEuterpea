@@ -109,9 +109,12 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 
 > bodyAndSoul' :: Music Pitch
 > bodyAndSoul' =
+>   let oct = 5 in
 >   tempo dhn $
->   Modify (KeySig Df Major) $
->     ((Modify (Phrase [Chord D Maj7])) $ d 6 en :+: d 6 qn :+: fs 5 en)
+>           Modify (KeySig Df Major) $
+>           ((Modify (Phrase [Chord C HalfDim7])) $ f oct hn) :+:
+>            ((Modify (Phrase [Chord F Dom7])) $ f oct qn :+: ef oct qn)
+
 
 > whenIFallInLove :: Music Pitch
 > whenIFallInLove =
@@ -153,4 +156,10 @@ TODO: What is going on here?
 >   Modify (KeySig F Minor) $
 >   ((Modify (Phrase [Chord C Dom7]) $ bf 5 qn :+: af 5 en :+: bf 5 en))
 
-
+> blackOrpheus :: Music Pitch
+> blackOrpheus =
+>   Modify (KeySig A Minor) $
+>   let oct = 5
+>       octUp1 = 6
+>   in
+>     a 4 en
