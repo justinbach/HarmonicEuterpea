@@ -209,8 +209,8 @@ TODO: remove
 >         alt9th = flat9th ++ sharp9th
 >         nat11th = [5]
 >         nat13th = [9]
->         maybeAlt5th = if isAlt5th then flat5th else nat5th -- TODO: use sharp5th? sometimes?
->         maybeAlt9th = if isAlt9th then flat9th else nat9th -- TODO: use sharp9th? sometimes?
+>         maybeAlt5th = if isAlt5th then flat5th else nat5th -- TODO: use sharp5th sometimes?
+>         maybeAlt9th = if isAlt9th then flat9th else nat9th -- TODO: use sharp9th sometimes?
 >         maybeAlt13th = if isAlt5th then sharp5th else nat13th
 >       in
 >         case ct of
@@ -234,7 +234,7 @@ TODO: remove
 >         diatonic5th = [getOffset 4]
 >         diatonic9th = [getOffset 1]
 >         diatonic11th = [getOffset 3]
->         diatonic13th = [getOffset 5]
+>         diatonic13th = remDissonence' [getOffset 5] -- don't conflict with melody or root
 >       in
 >         case ct of
 >           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th

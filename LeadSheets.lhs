@@ -49,7 +49,16 @@ This file contains a few "lead sheets" to be performed by various players.
 >           ((Modify (Phrase [Chord F Min7])) $ f octU2 hn) :+:
 >           ((Modify (Phrase [Chord Bf Dom7])) $ c octU2 hn)
 >   in
->     a' :+: a'' :+: b' :+: a'
+>     a' -- :+: a'' :+: b' :+: a'
+
+> somewhereOverTheRainbow' :: Music Pitch
+> somewhereOverTheRainbow' =
+>   let oct = 5 in
+>   Modify (KeySig Ef Major) $
+>   tempo dhn $
+>           ((Modify (Phrase [Chord C Dom7])) $ g oct qn :+: gs oct qn)
+
+
 
 
 Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note out of the melodic range. This musical "hack" is used several times over the course of the piece.
