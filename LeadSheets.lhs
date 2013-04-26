@@ -132,16 +132,18 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >   tempo dhn $
 >   Modify (KeySig Ef Major) $
 >   let oct = 5
->       a' = ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+>       octU1 = oct + 1
+>       octD1 = oct - 1
+>       a' = ((Modify (Phrase [Chord Ef Maj7])) $ bf octD1 qn :+: ef oct qn) :+:
 >            ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn) :+:
 >            ((Modify (Phrase [Chord F Min7])) $ ef oct hn) :+:
->            ((Modify (Phrase [Chord Bf Dom7])) $ bf (oct - 1) hn) :+:
->            ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
+>            ((Modify (Phrase [Chord Bf Dom7])) $ bf octD1 hn) :+:
+>            ((Modify (Phrase [Chord Ef Maj7])) $ bf octD1 qn :+: ef oct qn) :+:
 >            ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn) :+:
->            ((Modify (Phrase [Chord F Dom7])) $ ef oct qn :+: g oct qn) :+:
+>            ((Modify (Phrase [Chord F Dom7])) $ ef oct hn) :+:
 >            ((Modify (Phrase [Chord Bf Dom7])) $ f oct hn) :+:
->            ((Modify (Phrase [Chord Ef Maj7])) $ bf (oct - 1) qn :+: ef oct qn) :+:
->            ((Modify (Phrase [Chord Af Dom7])) $ c (oct + 1) qn :+: bf oct qn) :+:
+>            ((Modify (Phrase [Chord Ef Maj7])) $ bf octD1 qn :+: ef oct qn) :+:
+>            ((Modify (Phrase [Chord Af Dom7])) $ c octU1 qn :+: bf oct qn) :+:
 >            ((Modify (Phrase [Chord Df Dom7])) $ af oct hn) :+:
 >            ((Modify (Phrase [Chord C Dom7])) $ g oct hn) :+:
 >            ((Modify (Phrase [Chord F Dom7])) $ f oct hn) :+:
@@ -155,17 +157,39 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >            ((Modify (Phrase [Chord Af Maj7])) $ (tempo (3 % 2) (bf oct qn :+: g oct qn :+: af oct qn))) :+:
 >            (Modify (KeySig F Minor) $ -- modulation!
 >            ((Modify (Phrase [Chord G HalfDim7])) $ bf oct hn) :+:
->            ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en))
+>            ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: af oct en :+: bf oct en) :+:
+>            ((Modify (Phrase [Chord F Min])) $ c octU1 dqn :+: f oct en) :+:
+>            ((Modify (Phrase [Chord B Dom7])) $ f oct qn :+: f oct qn) :+:
+>            ((Modify (Phrase [Chord Df Dom7])) $ af oct qn :+: g oct qn) :+:
+>            ((Modify (Phrase [Chord C Dom7])) $ g oct qn :+: af oct en :+: bf oct en) :+:
+>            ((Modify (Phrase [Chord F Min7])) $ (tempo (3 % 2) (c octU1 qn :+: af oct qn :+: bf oct qn))) :+:
+>            ((Modify (Phrase [Chord C Dom7])) $ (tempo (3 % 2) (c octU1 qn :+: af oct qn :+: c octU1 qn)))) :+:
+>            (Modify (KeySig Ef Major) $ -- and back
+>            ((Modify (Phrase [Chord F Min7])) $ bf oct hn) :+:
+>            ((Modify (Phrase [Chord Bf Dom7])) $ bf oct hn))
+>       c' = ((Modify (Phrase [Chord Ef Maj7])) $ bf oct dqn :+: ef oct en) :+:
+>            ((Modify (Phrase [Chord A Dom7])) $ ef oct qn :+: ef oct qn) :+:
+>            ((Modify (Phrase [Chord Af Maj7])) $ d octU1 qn :+: c octU1 qn) :+:
+>            ((Modify (Phrase [Chord D Dom7])) $ c octU1 qn :+: c oct qn) :+:
+>            ((Modify (Phrase [Chord G Min7])) $ c octU1 qn :+: bf oct qn) :+:
+>            ((Modify (Phrase [Chord C Dom7])) $ bf oct qn :+: ef octU1 qn) :+:
+>            ((Modify (Phrase [Chord F Min7])) $ af oct hn) :+:
+>            ((Modify (Phrase [Chord Df Dom7])) $ af oct qn :+: f oct qn) :+:
+>            ((Modify (Phrase [Chord Ef Maj7])) $ bf octD1 qn :+: ef oct qn) :+:
+>            ((Modify (Phrase [Chord C Dom7])) $ af oct qn :+: g oct qn) :+:
+>            ((Modify (Phrase [Chord B Dom7])) $ ef oct hn) :+:
+>            ((Modify (Phrase [Chord Bf Dom7])) $ f oct hn) :+:
+>            ((Modify (Phrase [Chord Ef Maj])) $ ef oct dwn)
 >   in
->     a' :+: b'
+>     a' :+: b' :+: a' :+: c'
 
-TODO: What is going on here?
 
 > whenIFallInLove' :: Music Pitch
 > whenIFallInLove' =
+>   let oct = 5 in
 >   tempo dhn $
 >   Modify (KeySig F Minor) $
->   ((Modify (Phrase [Chord C Dom7]) $ bf 5 qn :+: af 5 en :+: bf 5 en))
+>            ((Modify (Phrase [Chord Df Dom7])) $ af oct wn)
 
 > blackOrpheus :: Music Pitch
 > blackOrpheus =
