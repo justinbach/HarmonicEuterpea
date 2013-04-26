@@ -145,40 +145,6 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >       Nothing -> False
 
 
------------------------
-TODO: remove
-
-> getInts' (key, mode) =
->   if mode == Major then majorInts else minorInts
-
-> getTypes' (key, mode) =
->   if mode == Major then majorTypes else minorTypes
-
-> getScaleIndex' (key, mode) pc =
->   let
->     ints = getInts' (key, mode)
->     cap = absPitch (pc, 0)
->     kap = absPitch (key, 0)
->     kInts = map (\i -> (kap + i) `mod` 12) ints
->   in
->     cap `elemIndex` kInts
-
-> isDiatonic' (key, mode) e = -- function to check whether a note is diatonic in the current(key, mode)
->   case getScaleIndex' (key, mode) (fst $ pitch (ePitch e)) of
->   Just _ -> True
->   Nothing -> False
-
-> isDiatonicChord' (key, mode) pc ct = -- check whether a chord is diatonic to current(key, mode)
->   let
->     (ints, types) = (getInts' (key, mode), getTypes' (key, mode))
->   in
->     case getScaleIndex' (key, mode) pc of
->       Just i  -> ct `elem` (types !! i)
->       Nothing -> False
-
-------------------------------
-
-
 > isDissonent         :: AbsPitch -> AbsPitch -> Bool
 > isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
 >   abs ((ap1 `mod` 12) - (ap2 `mod` 12)) `elem` [1] -- can be adjusted by adding more elements

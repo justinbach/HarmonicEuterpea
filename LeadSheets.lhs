@@ -183,7 +183,6 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >   in
 >     a' :+: b' :+: a' :+: c'
 
-
 > whenIFallInLove' :: Music Pitch
 > whenIFallInLove' =
 >   let oct = 5 in
@@ -193,8 +192,55 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 
 > blackOrpheus :: Music Pitch
 > blackOrpheus =
+>   Modify (Tempo (5 % 4)) $
 >   Modify (KeySig A Minor) $
 >   let oct = 5
->       octUp1 = 6
+>       octU1 = oct + 1
+>       octD1 = oct - 1
+>       pickup = e oct qn
+>       a' = ((Modify (Phrase [Chord A Min])) $ c octU1 dhn :+: b oct en :+: a oct en) :+:
+>            ((Modify (Phrase [Chord B HalfDim7])) $ a oct hn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ gs oct qn :+: b oct qn) :+:
+>            ((Modify (Phrase [Chord A Min])) $ e oct wn) :+:
+>            ((Modify (Phrase [Chord B HalfDim7])) $ e oct hn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ e oct hn)
+>       b' =   Modify (KeySig C Major) $
+>            ((Modify (Phrase [Chord A Min])) $ c octU1 dhn :+: b oct en :+: a oct en) :+:
+>            ((Modify (Phrase [Chord D Min7])) $ a oct hn) :+:
+>            ((Modify (Phrase [Chord G Dom7])) $ g oct qn :+: b oct qn) :+:
+>            ((Modify (Phrase [Chord C Maj])) $ e oct wn) :+:
+>            ((Modify (Phrase [Chord Cs Dim7])) $ e oct hn) :+:
+>            ((Modify (Phrase [Chord A Dom7])) $ e oct qn :+: f oct en :+: g oct en) :+:
+>            ((Modify (Phrase [Chord D Min7])) $ a oct dqn :+: d oct en :+: d oct hn) :+:
+>            ((Modify (Phrase [Chord G Dom7])) $ d oct hn :+: d oct qn :+: e oct en :+: f oct en) :+:
+>            ((Modify (Phrase [Chord C Maj])) $ g oct dqn :+: c oct en :+: c oct hn) :+:
+>            ((Modify (Phrase [Chord F Maj7])) $ c oct hn :+: c oct qn :+: d oct en :+: e oct en) :+:
+>            (Modify (KeySig A Minor) $
+>            ((Modify (Phrase [Chord B HalfDim7])) $ f oct dqn :+: b octD1 en :+: b octD1 hn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ b octD1 hn :+: b octD1 qn :+: c oct en :+: d oct en) :+:
+>            ((Modify (Phrase [Chord A Min])) $ e oct wn) :+:
+>            ((Modify (Phrase [Chord B HalfDim7])) $ e oct hn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ e oct hn))
+>       c' =   Modify (KeySig D Minor) $
+>            ((Modify (Phrase [Chord E HalfDim7])) $ bf oct dhn :+: a oct en :+: g oct en) :+:
+>            ((Modify (Phrase [Chord A Dom7])) $ g oct dhn :+: f oct en :+: e oct en) :+:
+>            ((Modify (Phrase [Chord D Min])) $ a oct dwn :+: d oct hn) :+:
+>            (Modify (KeySig A Minor) $
+>            ((Modify (Phrase [Chord D Min7])) $ d oct dhn :+: e oct en :+: f oct en) :+:
+>            ((Modify (Phrase [Chord B HalfDim7])) $ b oct hn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ b oct hn) :+:
+>            ((Modify (Phrase [Chord A Min7])) $ c oct hn :+: c oct qn :+: d oct en :+: e oct en) :+:
+>            ((Modify (Phrase [Chord F Maj7])) $ a oct dhn :+: gs oct qn) :+:
+>            ((Modify (Phrase [Chord B HalfDim7])) $ e oct wn) :+:
+>            ((Modify (Phrase [Chord E Dom7])) $ e oct hn :+: e oct qn :+: gs oct en :+: b oct en) :+:
+>            ((Modify (Phrase [Chord A Min])) $ a oct dwn))
 >   in
->     a 4 en
+>     pickup :+: a' :+: b' :+: a' :+: c'
+
+
+> blackOrpheus' :: Music Pitch
+> blackOrpheus' =
+>   let oct = 5 in
+>   tempo dhn $
+>   Modify (KeySig C Major) $
+>            ((Modify (Phrase [Chord C Maj7])) $ e oct wn)
