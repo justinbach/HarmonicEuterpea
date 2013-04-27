@@ -29,3 +29,5 @@ Use the "clean" player to perform a melody.
 > playRich :: Music Pitch -> IO ()
 > playRich m = playPlayer "RichPlayer" m
 
+> playTritone :: Music Pitch -> IO ()
+> playTritone m = playPlayer "TritonePlayer" m

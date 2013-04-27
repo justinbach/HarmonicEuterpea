@@ -162,6 +162,7 @@ The following functions add harmonic extensions to the voicing. In the case of D
 > addTensions context mel pc ct =
 >   let
 >     root = head $ addRoot mel pc ct
+>     melpc = fst $ pitch $ ePitch mel
 >     remDissonence' = remDissonenceMelRoot pc mel root
 >     addHeuristicTensions mel pc ct =
 >       let
@@ -220,9 +221,9 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >           Dim7 -> diatonic5th
 >           MinMaj7 ->diatonic5th
 >           AugMaj7 -> diatonic5th
->     ints = case getScaleIndex context pc of
->           Just _ -> addDiatonicTensions mel pc ct
->           Nothing -> addHeuristicTensions mel pc ct
+>     ints = case (getScaleIndex context pc, getScaleIndex context melpc) of
+>           (Just _, Just _) -> addDiatonicTensions mel pc ct
+>           _ -> addHeuristicTensions mel pc ct
 >   in
 >   map (getTensions pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints
 

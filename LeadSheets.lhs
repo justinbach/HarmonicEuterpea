@@ -116,7 +116,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >            ((Modify (Phrase [Chord B Dom7])) $ ds oct qn) :+:
 >            ((Modify (Phrase [Chord Bf Dom7])) $ d oct qn :+: bf oct qn)
 >   in
->     a'' :+: a''' :+: b' :+: b'' :+: a'
+>     a'' -- :+: a''' :+: b' :+: b'' :+: a'
 
 > bodyAndSoul' :: Music Pitch
 > bodyAndSoul' =
