@@ -3,7 +3,8 @@ NetID:  jpb55
 Class:  CPSC-531
 Date:   4/15/13
 
-Final Project
+The code in this file constructs a few players, which use the functions for
+creating voicings in interesting and different ways.
 
 > module Players where
 > import Euterpea
@@ -13,8 +14,6 @@ Final Project
 > import Data.Maybe
 > import System.Random
 > import System.IO.Unsafe -- just for random numbers!
-
-The code in this file constructs a few players, which use the functions for creating voicings in interesting and different ways.
 
 > myPMap                       :: PlayerName -> Player Note1
 > myPMap "CleanPlayer"         = cleanPlayer
@@ -152,7 +151,7 @@ third, fifth, seventh, or ninth.
 
 -------------------------------------------------------------------------------
 
-This player combines all of the above players by randomly choosing which strategy
+This player combines some of the above players by randomly choosing which strategy
 to use when interpreting harmony.
 
 > comboPlayer :: Player (Pitch, [NoteAttribute])
@@ -163,8 +162,7 @@ to use when interpreting harmony.
 > comboInterpPhrase :: PhraseFun a
 > comboInterpPhrase pm c [] m = perf pm c m
 > comboInterpPhrase pm c pas m =
->   let interpPhrases = [cleanInterpPhrase,
->                        richInterpPhrase,
+>   let interpPhrases = [richInterpPhrase,
 >                        tritoneInterpPhrase,
 >                        reharmInterpPhrase]
 >       interpIndex   = (unsafePerformIO $ randomIO) `mod` (length interpPhrases)

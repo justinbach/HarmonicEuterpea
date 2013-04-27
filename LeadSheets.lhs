@@ -9,6 +9,7 @@ This file contains a few "lead sheets" to be performed by various players.
 > import Euterpea
 > import Data.Ratio
 
+-------------------------------------------------------------------------------
 
 > somewhereOverTheRainbow :: Music Pitch
 > somewhereOverTheRainbow =
@@ -61,7 +62,7 @@ This file contains a few "lead sheets" to be performed by various players.
 >           ((Modify (Phrase [Chord C Dom7])) $ d octU2 hn)
 
 
-
+-------------------------------------------------------------------------------
 
 Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note out of the melodic range. This musical "hack" is used several times over the course of the piece.
 
@@ -116,15 +117,10 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >            ((Modify (Phrase [Chord B Dom7])) $ ds oct qn) :+:
 >            ((Modify (Phrase [Chord Bf Dom7])) $ d oct qn :+: bf oct qn)
 >   in
->     a'' -- :+: a''' :+: b' :+: b'' :+: a'
+>     a'' :+: a''' :+: b' :+: b'' :+: a'
 
-> bodyAndSoul' :: Music Pitch
-> bodyAndSoul' =
->   let oct = 5 in
->   tempo dhn $
->           Modify (KeySig Df Major) $
->            ((Modify (Phrase [Chord D Dom7])) $ b oct wn )
 
+-------------------------------------------------------------------------------
 
 > whenIFallInLove :: Music Pitch
 > whenIFallInLove =
@@ -182,12 +178,8 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >   in
 >     a' :+: b' :+: a' :+: c'
 
-> whenIFallInLove' :: Music Pitch
-> whenIFallInLove' =
->   let oct = 5 in
->   tempo dhn $
->   Modify (KeySig F Minor) $
->            ((Modify (Phrase [Chord Df Dom7])) $ af oct wn)
+
+-------------------------------------------------------------------------------
 
 > blackOrpheus :: Music Pitch
 > blackOrpheus =
@@ -235,11 +227,3 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >            ((Modify (Phrase [Chord A Min])) $ a oct dwn))
 >   in
 >     pickup :+: a' :+: b' :+: a' :+: c'
-
-
-> blackOrpheus' :: Music Pitch
-> blackOrpheus' =
->   let oct = 5 in
->   tempo dhn $
->   Modify (KeySig C Major) $
->            ((Modify (Phrase [Chord C Maj7])) $ e oct wn)

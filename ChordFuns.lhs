@@ -3,7 +3,8 @@ NetID:  jpb55
 Class:  CPSC-531
 Date:   4/15/13
 
-Final Project
+This file provides many useful functions to be invoked by the various players
+when interpreting harmonic annotation in a given musical context.
 
 > module ChordFuns where
 > import Euterpea
@@ -11,8 +12,7 @@ Final Project
 > import Data.Ratio
 > import Data.Maybe
 
-
-TODO: add file description
+-------------------------------------------------------------------------------
 
 This helper function is used in assessing what notes to include in a voicing, given the melody line.
 
@@ -21,12 +21,18 @@ This helper function is used in assessing what notes to include in a voicing, gi
 >   let ((pc, _),(pc', _)) = (pitch (ePitch e1), pitch (ePitch e2)) in
 >   pc' == pc
 
+
+-------------------------------------------------------------------------------
+
 This helper function is used to remove from a voicing any pitch already in the melody.
 
 > dedup        :: Event -> [Event] -> [Event]
 > dedup mel ns =
 >       map (\(x, y) -> y) $ filter (not . areSamePC)
 >         $ zip (replicate (length ns) mel) ns
+
+
+-------------------------------------------------------------------------------
 
 These helper functions ensure that the notes selected for the voicing are no more than an octave above the a given threshold. The thresolds are as follows:
 
@@ -50,11 +56,15 @@ Tensions: (G, 4)
 > getTensions pc e = getAboveThreshold (G, 4) e
 
 
+-------------------------------------------------------------------------------
+
 This helper function adds the root to the harmonic voicing.
 
 > addRoot           :: Event -> PitchClass -> ChordType -> [Event]
 > addRoot mel pc ct = [getRoot pc mel {ePitch = absPitch (pc, 0)}]
 
+
+-------------------------------------------------------------------------------
 
 This helper function adds the core non-root chord tones to the voicing. Note that this only addresses 3rd and 7ths (where applicable); inclusion of the 5th should be determined on the basis of the melody, and so is classified as a tension.
 
@@ -75,7 +85,11 @@ This helper function adds the core non-root chord tones to the voicing. Note tha
 >   in
 >     map (get37 pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints
 
-The following functions add harmonic extensions to the voicing. In the case of DiatonicPlayer, any added extensions are diatonic to the key of the song.
+
+-------------------------------------------------------------------------------
+
+The following functions provide tonality-related utilities. They are
+primarily used by the addTensions function.
 
 > majorInts :: [AbsPitch]
 > majorInts = [0, 2, 4, 5, 7, 9, 11] -- major scale
@@ -158,12 +172,49 @@ The following functions add harmonic extensions to the voicing. In the case of D
 > remDissonenceMelRoot pc mel root is =
 >   remDissonence pc root $ remDissonence pc mel is
 
+
+-------------------------------------------------------------------------------
+
+The following function adds color tones, or "tensions", to the harmonic
+realization of a chord. There are two general situations that it handles.
+In the first, the chord is built on a diatonic scale degree of the current
+key, and tensions are added from the diatonic scale of the key. In the second,
+heuristic measures are invoked (e.g. melodic) to determine which sorts of
+harmonic extensions might be appropriate. Both implementations, but especially
+the latter, are much more "ad hoc" than I would like.
+
 > addTensions :: Context a -> Event -> PitchClass -> ChordType -> [Event]
 > addTensions context mel pc ct =
 >   let
 >     root = head $ addRoot mel pc ct
 >     melpc = fst $ pitch $ ePitch mel
 >     remDissonence' = remDissonenceMelRoot pc mel root
+>     addDiatonicTensions mel pc ct =
+>       let
+>         scaleDegree = fromJust $ getScaleIndex context pc
+>         ints        = getInts context
+>         getOffset o = (ints !! ((scaleDegree + o) `mod` (length ints)))
+>                        - (ints !! scaleDegree)
+>         diatonic5th = [getOffset 4]
+>         diatonic9th = [getOffset 1]
+>         diatonic11th = [getOffset 3]
+>         -- avoid clashes between natural and sharp 5
+>         diatonic13th = case isDissonent (getOffset 5) (head diatonic5th) of
+>                         True -> []
+>                         False -> [getOffset 5]
+>       in
+>         case ct of
+>           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
+>           Min -> remDissonence' $ diatonic5th ++ diatonic9th
+>           Dim -> diatonic5th
+>           Aug -> diatonic5th
+>           Maj7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic13th
+>           Min7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic11th
+>           Dom7 -> diatonic5th ++ diatonic9th ++ diatonic13th
+>           HalfDim7 -> diatonic5th
+>           Dim7 -> diatonic5th
+>           MinMaj7 ->diatonic5th
+>           AugMaj7 -> diatonic5th
 >     addHeuristicTensions mel pc ct =
 >       let
 >         diff = abs (ePitch mel `mod` 12) - (absPitch (pc, 0))
@@ -195,39 +246,17 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >           Dim7 -> flat5th
 >           MinMaj7 -> maybeAlt5th
 >           AugMaj7 -> sharp5th
->     addDiatonicTensions mel pc ct =
->       let
->         scaleDegree = fromJust $ getScaleIndex context pc
->         ints        = getInts context
->         getOffset o = (ints !! ((scaleDegree + o) `mod` (length ints)))
->                        - (ints !! scaleDegree)
->         diatonic5th = [getOffset 4]
->         diatonic9th = [getOffset 1]
->         diatonic11th = [getOffset 3]
->         -- avoid clashes between natural and sharp 5
->         diatonic13th = case isDissonent (getOffset 5) (head diatonic5th) of
->                         True -> []
->                         False -> [getOffset 5]
->       in
->         case ct of
->           Maj -> diatonic5th ++ diatonic9th ++ diatonic13th
->           Min -> remDissonence' $ diatonic5th ++ diatonic9th
->           Dim -> diatonic5th
->           Aug -> diatonic5th
->           Maj7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic13th
->           Min7 -> remDissonence' $ diatonic5th ++ diatonic9th ++ diatonic11th
->           Dom7 -> diatonic5th ++ diatonic9th ++ diatonic13th
->           HalfDim7 -> diatonic5th
->           Dim7 -> diatonic5th
->           MinMaj7 ->diatonic5th
->           AugMaj7 -> diatonic5th
 >     ints = case (getScaleIndex context pc, getScaleIndex context melpc) of
 >           (Just _, Just _) -> addDiatonicTensions mel pc ct
 >           _ -> addHeuristicTensions mel pc ct
 >   in
 >   map (getTensions pc) $ map (\i -> mel {ePitch = absPitch(pc, 0) + i}) ints
 
-This helper function removes any notes from the voicing that are pitched higher than the melody.
+
+-------------------------------------------------------------------------------
+
+This helper function removes any notes from the voicing that are pitched
+higher than the melody.
 
 > checkMelRange          :: [Event] -> [Event] -> [Event]
 > checkMelRange pf chord =
@@ -238,7 +267,10 @@ This helper function removes any notes from the voicing that are pitched higher 
 >     in
 >       filter (isLowerThanAll pf) chord
 
-These helper functions modify the notes to be as long as the phrase ("held down")
+
+-------------------------------------------------------------------------------
+
+These helper functions extend the voicing to be as long as the phrase.
 
 > maxTime          :: (Ratio Integer, Event) -> Ratio Integer -> Ratio Integer
 > maxTime (s, e) t = max (((eTime e) - s) + (eDur e)) t
@@ -251,7 +283,11 @@ These helper functions modify the notes to be as long as the phrase ("held down"
 >   let pfDur = pfLength pf in
 >   map (\e -> e {eDur = pfDur}) es
 
-This fixes the volume of the harmonic accompaniment to be less than that of the melody.
+
+-------------------------------------------------------------------------------
+
+This adjusts the volume of the harmonic accompaniment to be less than that
+of the melody.
 
 > fixVols        :: [Event] -> Event -> [Event]
 > fixVols pf ref = map (\e -> e{eVol = 3 * ceiling ((fromIntegral (eVol ref)) / 4) }) pf
