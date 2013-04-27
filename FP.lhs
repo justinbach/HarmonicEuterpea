@@ -17,8 +17,6 @@ Final Project
 The following helper functions provide a shorthand means of invoking a given player
 in the performance of a piece of music.
 
-Use the "clean" player to perform a melody.
-
 > playWithPlayer     :: String -> Music Pitch -> IO ()
 > playWithPlayer p m = playA myPMap defCon $ toMusic1 $ Modify (Player p) $ m
 
