@@ -44,16 +44,13 @@ This player cleanly interprets underlying harmony without adding any color tones
 
 > cleanInterpPhrase :: PhraseFun a
 > cleanInterpPhrase pm c [] m = perf pm c m
-> cleanInterpPhrase pm
->   c@Context {cTime = t, cPlayer = pl, cInst = i,
->              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
->   (pa:pas) m =
->     let
->       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->     in
->       case pa of
->         ch@(Chord pc ct) -> (myChordHandler genCleanChord ch c pf, dur)
->         _ -> pfd
+> cleanInterpPhrase pm c (pa:pas) m =
+>   let
+>     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>   in
+>     case pa of
+>       ch@(Chord pc ct) -> (myChordHandler genCleanChord ch c pf, dur)
+>       _ -> pfd
 
 
 -------------------------------------------------------------------------------
@@ -76,16 +73,13 @@ the appropriate level of consonance and dissonence.
 
 > richInterpPhrase :: PhraseFun a
 > richInterpPhrase pm c [] m = perf pm c m
-> richInterpPhrase pm
->   c@Context {cTime = t, cPlayer = pl, cInst = i,
->              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
->   (pa:pas) m =
->     let
->       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->     in
->       case pa of
->         ch@(Chord pc ct) -> (myChordHandler genRichChord ch c pf, dur)
->         _ -> pfd
+> richInterpPhrase pm c (pa:pas) m =
+>   let
+>     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>   in
+>     case pa of
+>       ch@(Chord pc ct) -> (myChordHandler genRichChord ch c pf, dur)
+>       _ -> pfd
 
 
 -------------------------------------------------------------------------------
@@ -100,21 +94,18 @@ but in addition, it always uses tritone substitutions for dominant chords.
 
 > tritoneInterpPhrase :: PhraseFun a
 > tritoneInterpPhrase pm c [] m = perf pm c m
-> tritoneInterpPhrase pm
->   c@Context {cTime = t, cPlayer = pl, cInst = i,
->              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
->   (pa:pas) m =
->     let
->       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->       tritone pc = fst $ pitch $ (absPitch (pc, 0) + 6) `mod` 12
->     in
->       case pa of
->         ch@(Chord pc ct) ->
->           case ct of
->             -- TODO: fix richPlayer's tensions so chords sound good with tritone subs
->             Dom7 -> (myChordHandler genCleanChord (Chord (tritone pc) ct) c pf, dur)
->             _ -> (myChordHandler genRichChord ch c pf, dur)
->         _ -> pfd
+> tritoneInterpPhrase pm c (pa:pas) m =
+>   let
+>     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>     tritone pc = fst $ pitch $ (absPitch (pc, 0) + 6) `mod` 12
+>   in
+>     case pa of
+>       ch@(Chord pc ct) ->
+>         case ct of
+>           -- TODO: fix richPlayer's tensions so chords sound good with tritone subs
+>           Dom7 -> (myChordHandler genCleanChord (Chord (tritone pc) ct) c pf, dur)
+>           _ -> (myChordHandler genRichChord ch c pf, dur)
+>       _ -> pfd
 
 -------------------------------------------------------------------------------
 
@@ -150,10 +141,7 @@ third, fifth, seventh, or ninth.
 
 > reharmInterpPhrase :: PhraseFun a
 > reharmInterpPhrase pm c [] m = perf pm c m
-> reharmInterpPhrase pm
->   c@Context {cTime = t, cPlayer = pl, cInst = i,
->              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
->   (pa:pas) m =
+> reharmInterpPhrase pm c (pa:pas) m =
 >     let
 >       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
 >     in
@@ -164,7 +152,7 @@ third, fifth, seventh, or ninth.
 
 -------------------------------------------------------------------------------
 
-This player combines all of the above players, randomly choosing which strategy
+This player combines all of the above players by randomly choosing which strategy
 to use when interpreting harmony.
 
 > comboPlayer :: Player (Pitch, [NoteAttribute])
@@ -174,10 +162,7 @@ to use when interpreting harmony.
 
 > comboInterpPhrase :: PhraseFun a
 > comboInterpPhrase pm c [] m = perf pm c m
-> comboInterpPhrase pm
->   c@Context {cTime = t, cPlayer = pl, cInst = i,
->              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
->   pas m =
+> comboInterpPhrase pm c pas m =
 >   let interpPhrases = [cleanInterpPhrase,
 >                        richInterpPhrase,
 >                        tritoneInterpPhrase,
