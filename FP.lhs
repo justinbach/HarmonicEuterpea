@@ -13,21 +13,26 @@ Final Project
 > import Data.Ratio
 > import Data.Maybe
 
-This file serves to demonstrate some of the uses of the new Chord PhraseAttribute I've added to Music.hs. In particular, it creates several chord-tagged melodies, equivalent to a lead sheet, and constructs a few different players that perform them, interpreting the underlying harmony in different ways.
 
-
-The following helper functions
+The following helper functions provide a shorthand means of invoking a given player
+in the performance of a piece of music.
 
 Use the "clean" player to perform a melody.
 
-> playPlayer     :: String -> Music Pitch -> IO ()
-> playPlayer p m = playA myPMap defCon $ toMusic1 $ Modify (Player p) $ m
+> playWithPlayer     :: String -> Music Pitch -> IO ()
+> playWithPlayer p m = playA myPMap defCon $ toMusic1 $ Modify (Player p) $ m
 
 > playClean :: Music Pitch -> IO ()
-> playClean m = playPlayer "CleanPlayer" m
+> playClean m = playWithPlayer "CleanPlayer" m
 
 > playRich :: Music Pitch -> IO ()
-> playRich m = playPlayer "RichPlayer" m
+> playRich m = playWithPlayer "RichPlayer" m
 
 > playTritone :: Music Pitch -> IO ()
-> playTritone m = playPlayer "TritonePlayer" m
+> playTritone m = playWithPlayer "TritonePlayer" m
+
+> playReharm :: Music Pitch -> IO ()
+> playReharm m = playWithPlayer "ReharmPlayer" m
+
+> playCombo :: Music Pitch -> IO ()
+> playCombo m = playWithPlayer "ComboPlayer" m

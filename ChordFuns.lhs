@@ -190,7 +190,7 @@ The following functions add harmonic extensions to the voicing. In the case of D
 >           Aug -> sharp5th
 >           Maj7 -> remDissonence' $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
 >           Min7 -> remDissonence' $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
->           Dom7 -> maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
+>           Dom7 -> maybeAlt5th ++ maybeAlt9th  ++ maybeAlt13th
 >           HalfDim7 -> flat5th
 >           Dim7 -> flat5th
 >           MinMaj7 -> maybeAlt5th

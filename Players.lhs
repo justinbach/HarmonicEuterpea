@@ -11,6 +11,8 @@ Final Project
 > import Data.List
 > import Data.Ratio
 > import Data.Maybe
+> import System.Random
+> import System.IO.Unsafe -- just for random numbers!
 
 The code in this file constructs a few players, which use the functions for creating voicings in interesting and different ways.
 
@@ -18,6 +20,8 @@ The code in this file constructs a few players, which use the functions for crea
 > myPMap "CleanPlayer"         = cleanPlayer
 > myPMap "RichPlayer"          = richPlayer
 > myPMap "TritonePlayer"       = tritonePlayer
+> myPMap "ReharmPlayer"        = reharmPlayer
+> myPMap "ComboPlayer"         = comboPlayer
 
 -------------------------------------------------------------------------------
 
@@ -28,7 +32,7 @@ This player cleanly interprets underlying harmony without adding any color tones
 >               {pName        = "CleanPlayer",
 >                interpPhrase = cleanInterpPhrase}
 
-> genCleanChord :: Context a -> Performance -> PitchClass -> ChordType ->Performance
+> genCleanChord :: Context a -> Performance -> PitchClass -> ChordType -> Performance
 > genCleanChord context pf pc ct =
 >   let mel = head pf in
 >   checkMelRange pf ((addRoot mel pc ct) ++ (add37 mel pc ct))
@@ -87,7 +91,7 @@ the appropriate level of consonance and dissonence.
 -------------------------------------------------------------------------------
 
 This player plays creates harmonically rich textures in the manner of the RichPlayer,
-but in addition, he always uses tritone substitutions for dominant chords.
+but in addition, it always uses tritone substitutions for dominant chords.
 
 > tritonePlayer :: Player (Pitch, [NoteAttribute])
 > tritonePlayer =  defPlayer
@@ -108,14 +112,76 @@ but in addition, he always uses tritone substitutions for dominant chords.
 >         ch@(Chord pc ct) ->
 >           case ct of
 >             -- TODO: fix richPlayer's tensions so chords sound good with tritone subs
->             Dom7 -> (myChordHandler genRichChord (Chord (tritone pc) ct) c pf, dur)
+>             Dom7 -> (myChordHandler genCleanChord (Chord (tritone pc) ct) c pf, dur)
 >             _ -> (myChordHandler genRichChord ch c pf, dur)
 >         _ -> pfd
 
+-------------------------------------------------------------------------------
+
+This player creates radical reharmonizations solely on the basis of the melody.
+It randomly picks a chord type and chord such that the melody note is the chord's
+third, fifth, seventh, or ninth.
+
+> reharmPlayer :: Player (Pitch, [NoteAttribute])
+> reharmPlayer =  defPlayer
+>               {pName        = "ReharmPlayer",
+>                interpPhrase = reharmInterpPhrase}
+
+> getReharmChord     :: Event -> PhraseAttribute
+> getReharmChord mel =
+>   let chordTypes = [Maj7, Min7]
+>       chordDegs  = [3, 5, 7, 9]
+>       ctIndex    = (unsafePerformIO $ randomIO) `mod` (length chordTypes)
+>       cdIndex    = (unsafePerformIO $ randomIO) `mod` (length chordDegs)
+>       ct         = chordTypes !! ctIndex
+>       cd         = chordDegs !! cdIndex
+>       melap      = ePitch mel
+>       chap       = case (ct, cd) of
+>                       (Min7, 3) -> melap - 3
+>                       (_, 3) -> melap - 4
+>                       (_, 5) -> melap - 7
+>                       (Maj7, 7) -> melap - 11
+>                       (_, 7) -> melap - 10
+>                       (_, 9) -> melap - 2
+>       pc         = fst $ pitch chap
+>   in
+>   Chord pc ct
 
 
+> reharmInterpPhrase :: PhraseFun a
+> reharmInterpPhrase pm c [] m = perf pm c m
+> reharmInterpPhrase pm
+>   c@Context {cTime = t, cPlayer = pl, cInst = i,
+>              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
+>   (pa:pas) m =
+>     let
+>       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
+>     in
+>       case pa of
+>         ch@(Chord pc ct) ->
+>             (myChordHandler genRichChord (getReharmChord $ head pf) c pf, dur)
+>         _ -> pfd
 
-TODO: add more players:
-- TritoneSubstPlayer - tritone substitutions on dominants (transforms pc and ct values)
-- CrazySubstPlayer - constructs new harmonic context based on the melody note by deciding whether it should be the root, third, fifth, or seventh of the chord at random
+-------------------------------------------------------------------------------
 
+This player combines all of the above players, randomly choosing which strategy
+to use when interpreting harmony.
+
+> comboPlayer :: Player (Pitch, [NoteAttribute])
+> comboPlayer =  defPlayer
+>               {pName        = "ComboPlayer",
+>                interpPhrase = comboInterpPhrase}
+
+> comboInterpPhrase :: PhraseFun a
+> comboInterpPhrase pm c [] m = perf pm c m
+> comboInterpPhrase pm
+>   c@Context {cTime = t, cPlayer = pl, cInst = i,
+>              cDur = dt, cVol = v, cPch = pch, cKey = (pc, mode)}
+>   pas m =
+>   let interpPhrases = [cleanInterpPhrase,
+>                        richInterpPhrase,
+>                        tritoneInterpPhrase,
+>                        reharmInterpPhrase]
+>       interpIndex   = (unsafePerformIO $ randomIO) `mod` (length interpPhrases)
+>       interpPhrase  = interpPhrases !! interpIndex
+>   in  interpPhrase pm c pas m

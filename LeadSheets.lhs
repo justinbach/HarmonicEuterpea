@@ -123,8 +123,7 @@ Note that there's a cheat being used on the first note of Body and Soul, which i
 >   let oct = 5 in
 >   tempo dhn $
 >           Modify (KeySig Df Major) $
->           ((Modify (Phrase [Chord C HalfDim7])) $ f oct hn) :+:
->            ((Modify (Phrase [Chord F Dom7])) $ f oct qn :+: ef oct qn)
+>            ((Modify (Phrase [Chord D Dom7])) $ b oct wn )
 
 
 > whenIFallInLove :: Music Pitch
