@@ -7,7 +7,7 @@ The code in this file constructs a few players, which use the functions for
 creating voicings in interesting and different ways.
 
 > module Players where
-> import Euterpea
+> import EuterpeaMods
 > import ChordFuns
 > import Data.List
 > import Data.Ratio

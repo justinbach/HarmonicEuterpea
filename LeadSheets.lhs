@@ -6,7 +6,7 @@ Date:   4/15/13
 This file contains a few "lead sheets" to be performed by various players.
 
 > module LeadSheets where
-> import Euterpea
+> import EuterpeaMods
 > import Data.Ratio
 
 -------------------------------------------------------------------------------

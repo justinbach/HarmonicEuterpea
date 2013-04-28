@@ -6,9 +6,9 @@ Date:   4/15/13
 Final Project
 
 > module FP where
+> import EuterpeaMods
 > import LeadSheets
 > import Players
-> import Euterpea
 > import Data.List
 > import Data.Ratio
 > import Data.Maybe

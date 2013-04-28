@@ -7,7 +7,7 @@ This file provides many useful functions to be invoked by the various players
 when interpreting harmonic annotation in a given musical context.
 
 > module ChordFuns where
-> import Euterpea
+> import EuterpeaMods
 > import Data.List
 > import Data.Ratio
 > import Data.Maybe
