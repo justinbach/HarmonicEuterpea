@@ -24,6 +24,7 @@ This file contains exports core Euterpea functionality for use in other modules,
 
 > import System.IO (hPutStrLn, stderr)
 > import System.IO.Unsafe (unsafePerformIO)
+> import System.Random
 > import Euterpea hiding (
 
 definitions from music.hs:
@@ -122,6 +123,49 @@ harmonic minor scales.
 > data ChordType =  Maj | Min | Dim | Aug | Maj7 | Min7 | Dom7 | HalfDim7 | Dim7 | MinMaj7 | AugMaj7
 >     deriving (Eq, Ord, Show)
 
+State monad for random number generation:
+
+> data SM a = SM (StdGen -> (StdGen, a))
+
+> instance Monad SM where
+>   return a = SM $ (\s0 -> (s0, a))
+>   SM sm0 >>= fsm1
+>     = SM $ \s0 ->
+>       let (s1, a1) = sm0 s0
+>           SM sm1   = fsm1 a1
+>           (s2, a2) = sm1 s1
+>       in (s2, a2)
+
+Revised versions of performance-related functions to support the monad:
+
+> perf :: PMap a -> Context a -> Music a -> SM (Performance, DurT)
+> perf pm
+>   c@Context {cTime = t, cPlayer = pl, cDur = dt, cPch = k} m =
+>   case m of
+>      Prim (Note d p)            -> return (playNote pl c d p, d*dt)
+>      Prim (Rest d)              -> return ([], d*dt)
+>      m1 :+: m2                  ->
+>              let  SM (pf1,d1)  = perf pm c m1
+>                   SM (pf2,d2)  = perf pm (c {cTime = t+d1}) m2
+>              in return (pf1++pf2, d1+d2)
+>      m1 :=: m2                  ->
+>              let  SM (pf1,d1)  = perf pm c m1
+>                   SM (pf2,d2)  = perf pm c m2
+>              in return (EuterpeaMods.merge pf1 pf2, max d1 d2)
+>      Modify  (Tempo r)       m  -> perf pm (c {cDur = dt / r})    m
+>      Modify  (Transpose p)   m  -> perf pm (c {cPch = k + p})     m
+>      Modify  (Instrument i)  m  -> perf pm (c {cInst = i})        m
+>      Modify  (KeySig pc mo)  m  -> perf pm (c {cKey = (pc,mo)})   m
+>      Modify  (Player pn)     m  -> perf pm (c {cPlayer = pm pn})  m
+>      Modify  (Phrase pas)    m  -> interpPhrase pl pm c pas       m
+
+> perform :: PMap a -> Context a -> Music a -> Performance
+
+> perform pm c m = let SM f = perf pm c m in
+>                  fst $ f $ mkStdGen 50
+
+> type PhraseFun a  =  PMap a -> Context a -> [PhraseAttribute]
+>                      -> Music a -> SM (Performance, DurT)
 
 BEGIN MUSIC.HS DEFINITIONS
 
@@ -322,8 +366,6 @@ BEGIN MUSIC.HS DEFINITIONS
 
 BEGIN PERFORMANCE.HS DEFINITIONS
 
-
-
 > type Performance = [Event]
 >
 > data Event = Event {  eTime    :: PTime,
@@ -354,29 +396,8 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >   if eTime e1 < eTime e2  then  e1  : EuterpeaMods.merge es1 b
 >                           else  e2  : EuterpeaMods.merge a es2
 >
-> perform :: PMap a -> Context a -> Music a -> Performance
-> perform pm c m = fst (perf pm c m)
 >
-> perf :: PMap a -> Context a -> Music a -> (Performance, DurT)
-> perf pm
->   c@Context {cTime = t, cPlayer = pl, cDur = dt, cPch = k} m =
->   case m of
->      Prim (Note d p)            -> (playNote pl c d p, d*dt)
->      Prim (Rest d)              -> ([], d*dt)
->      m1 :+: m2                  ->
->              let  (pf1,d1)  = perf pm c m1
->                   (pf2,d2)  = perf pm (c {cTime = t+d1}) m2
->              in (pf1++pf2, d1+d2)
->      m1 :=: m2                  ->
->              let  (pf1,d1)  = perf pm c m1
->                   (pf2,d2)  = perf pm c m2
->              in (EuterpeaMods.merge pf1 pf2, max d1 d2)
->      Modify  (Tempo r)       m  -> perf pm (c {cDur = dt / r})    m
->      Modify  (Transpose p)   m  -> perf pm (c {cPch = k + p})     m
->      Modify  (Instrument i)  m  -> perf pm (c {cInst = i})        m
->      Modify  (KeySig pc mo)  m  -> perf pm (c {cKey = (pc,mo)})   m
->      Modify  (Player pn)     m  -> perf pm (c {cPlayer = pm pn})  m
->      Modify  (Phrase pas)    m  -> interpPhrase pl pm c pas       m
+
 > type Note1   = (Pitch, [NoteAttribute])
 > type Music1  = Music Note1
 >
@@ -391,8 +412,6 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >                             notatePlayer  :: NotateFun a }
 >
 > type NoteFun a    =  Context a -> Dur -> a -> Performance
-> type PhraseFun a  =  PMap a -> Context a -> [PhraseAttribute]
->                      -> Music a -> (Performance, DurT)
 > type NotateFun a  =  ()
 >
 > instance Show a => Show (Player a) where
