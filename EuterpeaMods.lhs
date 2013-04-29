@@ -106,6 +106,8 @@ definitions from midiio.lhs
 
 BEGIN CUSTOM MODIFICATIONS
 
+Support for harmonic context as a PhraseAttribute:
+
 > data PhraseAttribute  =  Dyn Dynamic
 >                       |  Tmp EuterpeaMods.Tempo
 >                       |  Art Articulation
@@ -113,8 +115,13 @@ BEGIN CUSTOM MODIFICATIONS
 >                       |  Chord PitchClass ChordType
 >      deriving (Eq, Ord, Show)
 
+Support for different chord types. This set consists of all possible triads
+and seventh chords obtainable by building on each degree of the major and
+harmonic minor scales.
+
 > data ChordType =  Maj | Min | Dim | Aug | Maj7 | Min7 | Dom7 | HalfDim7 | Dim7 | MinMaj7 | AugMaj7
 >     deriving (Eq, Ord, Show)
+
 
 BEGIN MUSIC.HS DEFINITIONS
 
