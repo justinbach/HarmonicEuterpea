@@ -145,13 +145,13 @@ Revised versions of performance-related functions to support the monad:
 >      Prim (Note d p)            -> return (playNote pl c d p, d*dt)
 >      Prim (Rest d)              -> return ([], d*dt)
 >      m1 :+: m2                  ->
->              let  SM (pf1,d1)  = perf pm c m1
->                   SM (pf2,d2)  = perf pm (c {cTime = t+d1}) m2
->              in return (pf1++pf2, d1+d2)
+>              do (pf1, d1) <- perf pm c m1
+>                 (pf2, d2) <- perf pm (c {cTime = t + d1}) m2
+>                 return (pf1++pf2, d1+d2)
 >      m1 :=: m2                  ->
->              let  SM (pf1,d1)  = perf pm c m1
->                   SM (pf2,d2)  = perf pm c m2
->              in return (EuterpeaMods.merge pf1 pf2, max d1 d2)
+>              do (pf1, d1) <- perf pm c m1
+>                 (pf2, d2) <- perf pm (c {cTime = t + d1}) m2
+>                 return (EuterpeaMods.merge pf1 pf2, max d1 d2)
 >      Modify  (Tempo r)       m  -> perf pm (c {cDur = dt / r})    m
 >      Modify  (Transpose p)   m  -> perf pm (c {cPch = k + p})     m
 >      Modify  (Instrument i)  m  -> perf pm (c {cInst = i})        m
@@ -162,7 +162,7 @@ Revised versions of performance-related functions to support the monad:
 > perform :: PMap a -> Context a -> Music a -> Performance
 
 > perform pm c m = let SM f = perf pm c m in
->                  fst $ f $ mkStdGen 50
+>                  fst $ snd (f (mkStdGen 50))
 
 > type PhraseFun a  =  PMap a -> Context a -> [PhraseAttribute]
 >                      -> Music a -> SM (Performance, DurT)
@@ -440,10 +440,10 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 > defInterpPhrase ::
 >    (PhraseAttribute -> Performance -> Performance) ->
 >    (  PMap a -> Context a -> [PhraseAttribute] ->  --PhraseFun
->       Music a -> (Performance, DurT) )
+>       Music a -> SM (Performance, DurT) )
 > defInterpPhrase pasHandler pm context pas m =
->        let (pf,dur) = perf pm context m
->        in (foldr pasHandler pf pas, dur)
+>        do (pf,dur) <- perf pm context m
+>           return (foldr pasHandler pf pas, dur)
 >
 > defPasHandler :: PhraseAttribute -> Performance -> Performance
 > defPasHandler (Dyn (Accent x))    =
@@ -488,16 +488,16 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >                                     t'  = (1+dt*r)*dt + t0
 >                                     d'  = (1+(2*dt+d)*r)*d
 >                                in e {eTime = t', eDur = d'}
->                         in (map upd pf, (1+x)*dur)
+>                         in return (map upd pf, (1+x)*dur)
 >        inflate x     =  let  t0  = eTime (head pf);
 >                              r   = x/dur
 >                              upd (e@Event {eTime = t, eVol = v}) =
 >                                  e {eVol =  round ( (1+(t-t0)*r) *
 >                                             fromIntegral v)}
->                         in (map upd pf, dur)
+>                         in return (map upd pf, dur)
 >   in case pa of
 >     Dyn (Accent x) ->
->         ( map (\e-> e {eVol = round (x * fromIntegral (eVol e))}) pf, dur)
+>         return (map (\e-> e {eVol = round (x * fromIntegral (eVol e))}) pf, dur)
 >     Dyn (StdLoudness l) ->
 >         case l of
 >            PPP  -> loud 40;       PP -> loud 50;   P    -> loud 60
@@ -507,14 +507,14 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >                              c{cVol = (round . fromRational) x} pas m
 >     Dyn (Crescendo x)    ->  inflate   x ; Dyn (Diminuendo x)  -> inflate (-x)
 >     Tmp (Ritardando x)   ->  stretch   x ; Tmp (Accelerando x) -> stretch (-x)
->     Art (Staccato x)     ->  (map (\e-> e {eDur = x * eDur e}) pf, dur)
->     Art (Legato x)       ->  (map (\e-> e {eDur = x * eDur e}) pf, dur)
+>     Art (Staccato x)     ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
+>     Art (Legato x)       ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
 >     Art (Slurred x)      ->
 >         let  lastStartTime  = foldr (\e t -> max (eTime e) t) 0 pf
 >              setDur e       =   if eTime e < lastStartTime
 >                                 then e {eDur = x * eDur e}
 >                                 else e
->         in (map setDur pf, dur)
+>         in return (map setDur pf, dur)
 >     Art _                -> pfd
 >     Orn _                -> pfd
 >
@@ -522,7 +522,8 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >   perfDur :: PMap Note1 -> Context Note1 -> Music a -> (Performance, DurT)
 >
 > instance Performable Note1 where
->   perfDur pm c m = perf pm c m
+>   perfDur pm c m = let SM f = perf pm c m in
+>                    snd $ (f (mkStdGen 50))
 >
 > instance Performable Pitch where
 >   perfDur pm c = perfDur pm c . toMusic1
