@@ -3,7 +3,15 @@ NetID:  jpb55
 Class:  CPSC-531
 Date:   4/15/13
 
-This file contains exports core Euterpea functionality for use in other modules, as well as the modifications I made to support harmonic context.
+This file contains exports core Euterpea functionality for use in other modules.
+It also contains all the revisions I made to the Euterpea core, which include
+the addition of harmonic context and the threading of a state monad through
+performance-related functions for the generation of random numbers.
+
+Though this file is enormous, only the first few sections are really relevant;
+everything after line 500 or so is more or less copied verbatim from the
+parallel files in Euterpea, and the portion before that is only slightly
+modified.
 
 > {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
 
@@ -127,7 +135,7 @@ State monad for random number generation:
 
 > data SM a = SM (StdGen -> (StdGen, a))
 
-> randomSeed = 42
+> randomSeed = 25
 
 > instance Monad SM where
 >   return a = SM $ (\s0 -> (s0, a))
@@ -168,6 +176,10 @@ Revised versions of performance-related functions to support the monad:
 
 > type PhraseFun a  =  PMap a -> Context a -> [PhraseAttribute]
 >                      -> Music a -> SM (Performance, DurT)
+
+Note that I had to modify other functions in the PERFORMANCE.HS
+portion of this file below in order to support the threading of the
+state monad.
 
 BEGIN MUSIC.HS DEFINITIONS
 

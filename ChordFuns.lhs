@@ -14,7 +14,8 @@ when interpreting harmonic annotation in a given musical context.
 
 -------------------------------------------------------------------------------
 
-This helper function is used in assessing what notes to include in a voicing, given the melody line.
+This helper function is used to assess whether two Events belongs to the same
+PitchClass.
 
 > areSamePC          :: (Event, Event) -> Bool
 > areSamePC (e1, e2) =
@@ -34,7 +35,8 @@ This helper function is used to remove from a voicing any pitch already in the m
 
 -------------------------------------------------------------------------------
 
-These helper functions ensure that the notes selected for the voicing are no more than an octave above the a given threshold. The thresolds are as follows:
+These helper functions ensure that the notes selected for the voicing are no
+more than an octave above the a given threshold. The thresolds are as follows:
 
 Root    : (A, 2)
 3&7     : (D, 4)
@@ -66,7 +68,10 @@ This helper function adds the root to the harmonic voicing.
 
 -------------------------------------------------------------------------------
 
-This helper function adds the core non-root chord tones to the voicing. Note that this only addresses 3rd and 7ths (where applicable); inclusion of the 5th should be determined on the basis of the melody, and so is classified as a tension.
+This helper function adds the core non-root chord tones to the voicing. Note
+that this only addresses 3rd and 7ths (where applicable); inclusion of the 5th
+should be determined on the basis of the melody, and so is classified as a
+tension.
 
 > add37           :: Event -> PitchClass -> ChordType -> [Event]
 > add37 mel pc ct =
@@ -144,10 +149,13 @@ primarily used by the addTensions function.
 >     cap `elemIndex` kInts
 
 > isDiatonic           :: Context a -> Event -> Bool
-> isDiatonic context e = -- function to check whether a note is diatonic in the current context
+> isDiatonic context e =
 >   case getScaleIndex context (fst $ pitch (ePitch e)) of
 >   Just _ -> True
 >   Nothing -> False
+
+This function isn't actually used anywhere, but could be useful in
+constructing a player that is more conservative than (e.g.) RichPlayer.
 
 > isDiatonicChord      :: Context a -> PitchClass -> ChordType -> Bool
 > isDiatonicChord context pc ct = -- check whether a chord is diatonic to current context
@@ -158,6 +166,11 @@ primarily used by the addTensions function.
 >       Just i  -> ct `elem` (types !! i)
 >       Nothing -> False
 
+
+This function checks whether two absolute pitches are dissonent. The
+definition of dissonence is based on the list in the third line of the
+function and is right now limited to half-steps, but other intervals
+(e.g. tritones) could easily be added.
 
 > isDissonent         :: AbsPitch -> AbsPitch -> Bool
 > isDissonent ap1 ap2 = -- utility for removing half-step conflicts with the melody
@@ -176,12 +189,12 @@ primarily used by the addTensions function.
 -------------------------------------------------------------------------------
 
 The following function adds color tones, or "tensions", to the harmonic
-realization of a chord. There are two general situations that it handles.
-In the first, the chord is built on a diatonic scale degree of the current
-key, and tensions are added from the diatonic scale of the key. In the second,
-heuristic measures are invoked (e.g. melodic) to determine which sorts of
+realization of a chord. There are two general situations that it handles. In the
+first, the chord is built on a diatonic scale degree of the current key, and
+tensions are added from the diatonic scale of the key. In the second, heuristic
+measures are invoked (e.g. melodic assessment) to determine which sorts of
 harmonic extensions might be appropriate. Both implementations, but especially
-the latter, are much more "ad hoc" than I would like.
+the latter, are more "ad hoc" than I would like.
 
 > addTensions :: Context a -> Event -> PitchClass -> ChordType -> [Event]
 > addTensions context mel pc ct =
@@ -240,7 +253,7 @@ the latter, are much more "ad hoc" than I would like.
 >           Dim -> flat5th
 >           Aug -> sharp5th
 >           Maj7 -> remDissonence' $ maybeAlt5th ++ maybeAlt9th ++ maybeAlt13th
->           Min7 -> remDissonence' $ maybeAlt5th ++ nat9th -- TODO: use nat11th?
+>           Min7 -> remDissonence' $ maybeAlt5th ++ nat9th -- TODO: add nat11th?
 >           Dom7 -> maybeAlt5th ++ maybeAlt9th  ++ maybeAlt13th
 >           HalfDim7 -> flat5th
 >           Dim7 -> flat5th

@@ -3,7 +3,14 @@ NetID:  jpb55
 Class:  CPSC-531
 Date:   4/15/13
 
-This file contains a few "lead sheets" to be performed by various players.
+This file contains a few "lead sheets" to be performed by various players. Of
+the four presented here, three are in a major key ("Somewhere Over The
+Rainbow", "Body and Soul", "When I Fall in Love") and one is minor ("Black
+Orpheus").  All are well-known jazz standards, and the melodies and harmonic
+contexts with which I've annotated them are fairly standard. In many cases,
+I had to use a musical "hack" by adding a melody note that doesn't exist in
+the original song; this is necessary when a chord change is unaccompanied by
+a change in the melody.
 
 > module LeadSheets where
 > import EuterpeaMods
@@ -34,37 +41,28 @@ This file contains a few "lead sheets" to be performed by various players.
 >           ((Modify (Phrase [Chord F Min7])) $ f oct qn) :+:
 >           ((Modify (Phrase [Chord Bf Dom7])) $ g oct qn) :+:
 >           ((Modify (Phrase [Chord Ef Maj])) $ ef oct wn)
->       a'' = (takeM ((dur a') - en) a') :+: bf octU1 en -- pickup to bridge!
->       b' = ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g octU1 en :+: bf octU1 en)) :+:
->           ((Modify (Phrase [Chord F Min7])) $ timesM 2 (af octU1 en :+: bf octU1 en)) :+:
->           ((Modify (Phrase [Chord Bf Dom7])) $ timesM 2 (af octU1 en :+: bf octU1 en)) :+:
->           ((Modify (Phrase [Chord G Min7])) $ c octU2 hn) :+:
->           ((Modify (Phrase [Chord C Dom7])) $ c octU2 hn) :+:
+>       a'' = (takeM ((dur a') - en) a') :+: bf oct en -- pickup to bridge!
+>       b' = ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g oct en :+: bf oct en)) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ timesM 2 (af oct en :+: bf oct en)) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ timesM 2 (af oct en :+: bf oct en)) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ c octU1 hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ c octU1 hn) :+:
 >           ((Modify (Phrase [Chord F Min7])) $ af oct hn) :+:
->           ((Modify (Phrase [Chord Bf Dom7])) $ bf oct dqn :+: bf octU1 en) :+:
->           ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g octU1 en :+: bf octU1 en)) :+:
->           ((Modify (Phrase [Chord A HalfDim7])) $ timesM 2 (a octU1 en :+: c octU2 en)) :+:
->           ((Modify (Phrase [Chord D Dom7])) $ timesM 2 (a octU1 en :+: c octU2 en)) :+:
->           ((Modify (Phrase [Chord G Min7])) $ d octU2 hn) :+:
->           ((Modify (Phrase [Chord C Dom7])) $ d octU2 hn) :+:
->           ((Modify (Phrase [Chord F Min7])) $ f octU2 hn) :+:
->           ((Modify (Phrase [Chord Bf Dom7])) $ c octU2 hn)
+>           ((Modify (Phrase [Chord Bf Dom7])) $ bf oct dqn :+: bf oct en) :+:
+>           ((Modify (Phrase [Chord Ef Maj])) $ timesM 4 (g oct en :+: bf oct en)) :+:
+>           ((Modify (Phrase [Chord A HalfDim7])) $ timesM 2 (a oct en :+: c octU1 en)) :+:
+>           ((Modify (Phrase [Chord D Dom7])) $ timesM 2 (a oct en :+: c octU1 en)) :+:
+>           ((Modify (Phrase [Chord G Min7])) $ d octU1 hn) :+:
+>           ((Modify (Phrase [Chord C Dom7])) $ d octU1 hn) :+:
+>           ((Modify (Phrase [Chord F Min7])) $ f octU1 hn) :+:
+>           ((Modify (Phrase [Chord Bf Dom7])) $ c octU1 hn)
 >   in
 >     a' :+: a'' :+: b' :+: a'
-
-> somewhereOverTheRainbow' :: Music Pitch
-> somewhereOverTheRainbow' =
->   let oct = 5
->       octU2 = oct + 2
->   in
->   Modify (KeySig Ef Major) $
->   tempo dhn $
->           ((Modify (Phrase [Chord C Dom7])) $ d octU2 hn)
 
 
 -------------------------------------------------------------------------------
 
-Note that there's a cheat being used on the first note of Body and Soul, which is supposed to be a rest. In order to make the chordal texture kick in before the melody starts, I'm adding a note out of the melodic range. This musical "hack" is used several times over the course of the piece.
+The first note of this melody is an example of the "hack" described above.
 
 > bodyAndSoul :: Music Pitch
 > bodyAndSoul =

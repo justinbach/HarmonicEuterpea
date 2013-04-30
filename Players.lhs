@@ -24,7 +24,9 @@ creating voicings in interesting and different ways.
 
 -------------------------------------------------------------------------------
 
-This player cleanly interprets underlying harmony without adding any color tones.
+This player cleanly interprets the underlying harmony without adding any color
+tones. The harmonic textures it creates are rather lean, consisting solely of
+the root, third, and seventh.
 
 > cleanPlayer :: Player (Pitch, [NoteAttribute])
 > cleanPlayer =  defPlayer
@@ -53,8 +55,9 @@ This player cleanly interprets underlying harmony without adding any color tones
 -------------------------------------------------------------------------------
 
 This player adds color tones to the harmonic realization of the notated chords,
-relying on the melody, diatonic context, and various other heuristics to enforce
-the appropriate level of consonance and dissonence.
+relying on the melody, diatonic context, and various other heuristics to
+enforce the appropriate level of consonance and dissonence. The textures it
+produces are substantially richer than those of the cleanPlayer.
 
 > richPlayer :: Player (Pitch, [NoteAttribute])
 > richPlayer =  defPlayer
@@ -79,8 +82,9 @@ the appropriate level of consonance and dissonence.
 
 -------------------------------------------------------------------------------
 
-This player plays creates harmonically rich textures in the manner of the RichPlayer,
-but in addition, it always uses tritone substitutions for dominant chords.
+This player plays creates harmonically rich textures in the manner of the
+RichPlayer; however, it uses tritone substitutions on dominant chords to
+transform the harmonic context.
 
 > tritonePlayer :: Player (Pitch, [NoteAttribute])
 > tritonePlayer =  defPlayer
@@ -105,8 +109,10 @@ but in addition, it always uses tritone substitutions for dominant chords.
 -------------------------------------------------------------------------------
 
 This player creates radical reharmonizations solely on the basis of the melody.
-It randomly picks a chord type and chord such that the melody note is the chord's
-third, fifth, seventh, or ninth.
+It randomly picks a chord type and chord such that the melody note is the
+chord's third, fifth, seventh, or ninth. It's most effective when used on
+melodically simple songs with parallel melodic and harmonic motion, like
+"Somewhere Over The Rainbow".
 
 > reharmPlayer :: Player (Pitch, [NoteAttribute])
 > reharmPlayer =  defPlayer
@@ -142,8 +148,9 @@ third, fifth, seventh, or ninth.
 
 -------------------------------------------------------------------------------
 
-This player combines some of the above players by randomly choosing which strategy
-to use when interpreting harmony.
+This player combines some of the above players by randomly choosing which
+strategy to use when interpreting harmony. The randomness adds a nice element
+of surprise, especially when reharmInterpPhrase is invoked.
 
 > comboPlayer :: Player (Pitch, [NoteAttribute])
 > comboPlayer =  defPlayer
@@ -158,6 +165,28 @@ to use when interpreting harmony.
 >                              reharmInterpPhrase]
 >      interpPhrase pm c pas m
 
+
+-------------------------------------------------------------------------------
+
+The following helper functions provide a shorthand means of invoking a given player in the performance of a piece of music.
+
+> playWithPlayer     :: String -> Music Pitch -> IO ()
+> playWithPlayer p m = playA myPMap defCon $ toMusic1 $ Modify (Player p) $ m
+
+> playClean :: Music Pitch -> IO ()
+> playClean m = playWithPlayer "CleanPlayer" m
+
+> playRich :: Music Pitch -> IO ()
+> playRich m = playWithPlayer "RichPlayer" m
+
+> playTritone :: Music Pitch -> IO ()
+> playTritone m = playWithPlayer "TritonePlayer" m
+
+> playReharm :: Music Pitch -> IO ()
+> playReharm m = playWithPlayer "ReharmPlayer" m
+
+> playCombo :: Music Pitch -> IO ()
+> playCombo m = playWithPlayer "ComboPlayer" m
 
 -------------------------------------------------------------------------------
 
