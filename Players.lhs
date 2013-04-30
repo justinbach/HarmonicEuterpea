@@ -12,6 +12,7 @@ creating voicings in interesting and different ways.
 > import Data.List
 > import Data.Ratio
 > import Data.Maybe
+> import Data.Tuple
 > import System.Random
 > import System.IO.Unsafe -- just for random numbers!
 
@@ -21,6 +22,10 @@ creating voicings in interesting and different ways.
 > myPMap "TritonePlayer"       = tritonePlayer
 > myPMap "ReharmPlayer"        = reharmPlayer
 > myPMap "ComboPlayer"         = comboPlayer
+
+
+
+
 
 -------------------------------------------------------------------------------
 
@@ -156,9 +161,30 @@ to use when interpreting harmony.
 > comboInterpPhrase :: PhraseFun a
 > comboInterpPhrase pm c [] m = perf pm c m
 > comboInterpPhrase pm c pas m =
->   let interpPhrases = [richInterpPhrase,
->                        tritoneInterpPhrase,
->                        reharmInterpPhrase]
->       interpIndex   = (unsafePerformIO $ randomIO) `mod` (length interpPhrases)
->       interpPhrase  = interpPhrases !! interpIndex
->   in  interpPhrase pm c pas m
+>   do interpPhrase <- choose [richInterpPhrase,
+>                              tritoneInterpPhrase,
+>                              fancyInterpPhrase]
+>      interpPhrase pm c pas m
+
+
+
+These helper functions are used by the state monad for supplying random numbers.
+
+> getRandom :: SM StdGen
+> getRandom =  SM $ \s -> let (val, newGen) = next s in (newGen, s)
+
+> randomVal :: Int
+> randomVal =  let SM g = getRandom in fst $ next $ fst (g (mkStdGen 42))
+
+> choose :: [a] -> SM (a)
+> choose l@(x:xs) =  do g <- getRandom
+>                       let len = length l
+>                       let index = (fst $ next g) `mod` len
+>                       return (l !! index)
+
+-->   let interpPhrases = [richInterpPhrase,
+-->                        tritoneInterpPhrase,
+-->                        reharmInterpPhrase]
+-->       interpIndex   = (unsafePerformIO $ randomIO) `mod` (length interpPhrases)
+-->       interpPhrase  = interpPhrases !! interpIndex
+-->   in  interpPhrase pm c pas m

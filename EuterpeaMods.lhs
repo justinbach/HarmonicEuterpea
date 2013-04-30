@@ -127,6 +127,8 @@ State monad for random number generation:
 
 > data SM a = SM (StdGen -> (StdGen, a))
 
+> randomSeed = 42
+
 > instance Monad SM where
 >   return a = SM $ (\s0 -> (s0, a))
 >   SM sm0 >>= fsm1
@@ -162,7 +164,7 @@ Revised versions of performance-related functions to support the monad:
 > perform :: PMap a -> Context a -> Music a -> Performance
 
 > perform pm c m = let SM f = perf pm c m in
->                  fst $ snd (f (mkStdGen 50))
+>                  fst $ snd (f (mkStdGen randomSeed))
 
 > type PhraseFun a  =  PMap a -> Context a -> [PhraseAttribute]
 >                      -> Music a -> SM (Performance, DurT)
@@ -523,7 +525,7 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >
 > instance Performable Note1 where
 >   perfDur pm c m = let SM f = perf pm c m in
->                    snd $ (f (mkStdGen 50))
+>                    snd $ (f (mkStdGen randomSeed))
 >
 > instance Performable Pitch where
 >   perfDur pm c = perfDur pm c . toMusic1
