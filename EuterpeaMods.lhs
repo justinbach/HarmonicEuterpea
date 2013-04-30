@@ -135,7 +135,7 @@ State monad for random number generation:
 
 > data SM a = SM (StdGen -> (StdGen, a))
 
-> randomSeed = 25
+> randomSeed = 24
 
 > instance Monad SM where
 >   return a = SM $ (\s0 -> (s0, a))
