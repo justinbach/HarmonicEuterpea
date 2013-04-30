@@ -480,43 +480,43 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >   c@Context {  cTime = t, cPlayer = pl, cInst = i,
 >                cDur = dt, cPch = k, cVol = v}
 >   (pa:pas) m =
->   let  pfd@(pf,dur)  =  fancyInterpPhrase pm c pas m
->        loud x        =  fancyInterpPhrase pm c (Dyn (Loudness x) : pas) m
->        stretch x     =  let  t0 = eTime (head pf);  r  = x/dur
->                              upd (e@Event {eTime = t, eDur = d}) =
->                                let  dt  = t-t0
->                                     t'  = (1+dt*r)*dt + t0
->                                     d'  = (1+(2*dt+d)*r)*d
->                                in e {eTime = t', eDur = d'}
->                         in return (map upd pf, (1+x)*dur)
->        inflate x     =  let  t0  = eTime (head pf);
+>      do pfd@(pf,dur) <- fancyInterpPhrase pm c pas m
+>         let stretch x =  let  t0 = eTime (head pf);  r  = x/dur
+>                               upd (e@Event {eTime = t, eDur = d}) =
+>                                 let  dt  = t-t0
+>                                      t'  = (1+dt*r)*dt + t0
+>                                      d'  = (1+(2*dt+d)*r)*d
+>                                 in e {eTime = t', eDur = d'}
+>                          in return (map upd pf, (1+x)*dur)
+>         let inflate x = let  t0  = eTime (head pf);
 >                              r   = x/dur
 >                              upd (e@Event {eTime = t, eVol = v}) =
 >                                  e {eVol =  round ( (1+(t-t0)*r) *
 >                                             fromIntegral v)}
 >                         in return (map upd pf, dur)
->   in case pa of
->     Dyn (Accent x) ->
->         return (map (\e-> e {eVol = round (x * fromIntegral (eVol e))}) pf, dur)
->     Dyn (StdLoudness l) ->
->         case l of
->            PPP  -> loud 40;       PP -> loud 50;   P    -> loud 60
->            MP   -> loud 70;       SF -> loud 80;   MF   -> loud 90
->            NF   -> loud 100;      FF -> loud 110;  FFF  -> loud 120
->     Dyn (Loudness x)     ->  fancyInterpPhrase pm
->                              c{cVol = (round . fromRational) x} pas m
->     Dyn (Crescendo x)    ->  inflate   x ; Dyn (Diminuendo x)  -> inflate (-x)
->     Tmp (Ritardando x)   ->  stretch   x ; Tmp (Accelerando x) -> stretch (-x)
->     Art (Staccato x)     ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
->     Art (Legato x)       ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
->     Art (Slurred x)      ->
->         let  lastStartTime  = foldr (\e t -> max (eTime e) t) 0 pf
->              setDur e       =   if eTime e < lastStartTime
->                                 then e {eDur = x * eDur e}
->                                 else e
->         in return (map setDur pf, dur)
->     Art _                -> pfd
->     Orn _                -> pfd
+>         case pa of
+>           Dyn (Accent x) ->
+>               return (map (\e-> e {eVol = round (x * fromIntegral (eVol e))}) pf, dur)
+>           Dyn (StdLoudness l) ->
+>               let  loud x        =  fancyInterpPhrase pm c (Dyn (Loudness x) : pas) m in
+>               case l of
+>                  PPP  -> loud 40;       PP -> loud 50;   P    -> loud 60
+>                  MP   -> loud 70;       SF -> loud 80;   MF   -> loud 90
+>                  NF   -> loud 100;      FF -> loud 110;  FFF  -> loud 120
+>           Dyn (Loudness x)     ->  fancyInterpPhrase pm
+>                                    c{cVol = (round . fromRational) x} pas m
+>           Dyn (Crescendo x)    ->  inflate   x ; Dyn (Diminuendo x)  -> inflate (-x)
+>           Tmp (Ritardando x)   ->  stretch   x ; Tmp (Accelerando x) -> stretch (-x)
+>           Art (Staccato x)     ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
+>           Art (Legato x)       ->  return (map (\e-> e {eDur = x * eDur e}) pf, dur)
+>           Art (Slurred x)      ->
+>               let  lastStartTime  = foldr (\e t -> max (eTime e) t) 0 pf
+>                    setDur e       =   if eTime e < lastStartTime
+>                                       then e {eDur = x * eDur e}
+>                                       else e
+>               in return (map setDur pf, dur)
+>           Art _                -> return pfd
+>           Orn _                -> return pfd
 >
 > class Performable a where
 >   perfDur :: PMap Note1 -> Context Note1 -> Music a -> (Performance, DurT)
