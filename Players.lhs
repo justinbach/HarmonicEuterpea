@@ -163,12 +163,12 @@ to use when interpreting harmony.
 
 These helper functions are used by the state monad for supplying random numbers.
 
-> getRandom :: SM StdGen
-> getRandom =  SM $ \s -> let (val, newGen) = next s in (newGen, s)
+> getRandom :: SM Int
+> getRandom =  SM $ \s -> let (val, newGen) = next s in (newGen, val)
 
 > choose :: [a] -> SM (a)
-> choose l@(x:xs) =  do g <- getRandom
+> choose l@(x:xs) =  do i <- getRandom
 >                       let len = length l
->                       let index = (fst $ next g) `mod` len
+>                       let index = i `mod` len
 >                       return (l !! index)
 > choose []       =  error "cannot choose from an empty list"
