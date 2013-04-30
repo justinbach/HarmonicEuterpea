@@ -1,4 +1,4 @@
-Euterpea
+HarmonicEuterpea
 ========
 
-Forked version of Euterpea that implements explicit harmonic context and interpretation.
+Extension of Euterpea that implements explicit harmonic context and interpretation.
