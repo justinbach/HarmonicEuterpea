@@ -44,12 +44,10 @@ This player cleanly interprets underlying harmony without adding any color tones
 > cleanInterpPhrase :: PhraseFun a
 > cleanInterpPhrase pm c [] m = perf pm c m
 > cleanInterpPhrase pm c (pa:pas) m =
->   let
->     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->   in
->     case pa of
->       ch@(Chord pc ct) -> (myChordHandler genCleanChord ch c pf, dur)
->       _ -> pfd
+>   do pfd@(pf, dur) <- fancyInterpPhrase pm c pas m
+>      case pa of
+>        ch@(Chord pc ct) -> return (myChordHandler genCleanChord ch c pf, dur)
+>        _ -> return pfd
 
 
 -------------------------------------------------------------------------------
@@ -73,12 +71,10 @@ the appropriate level of consonance and dissonence.
 > richInterpPhrase :: PhraseFun a
 > richInterpPhrase pm c [] m = perf pm c m
 > richInterpPhrase pm c (pa:pas) m =
->   let
->     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->   in
->     case pa of
->       ch@(Chord pc ct) -> (myChordHandler genRichChord ch c pf, dur)
->       _ -> pfd
+>   do pfd@(pf, dur) <- fancyInterpPhrase pm c pas m
+>      case pa of
+>        ch@(Chord pc ct) -> return (myChordHandler genRichChord ch c pf, dur)
+>        _ -> return pfd
 
 
 -------------------------------------------------------------------------------
@@ -95,16 +91,16 @@ but in addition, it always uses tritone substitutions for dominant chords.
 > tritoneInterpPhrase pm c [] m = perf pm c m
 > tritoneInterpPhrase pm c (pa:pas) m =
 >   let
->     pfd@(pf, dur) = fancyInterpPhrase pm c pas m
 >     tritone pc = fst $ pitch $ (absPitch (pc, 0) + 6) `mod` 12
 >   in
->     case pa of
->       ch@(Chord pc ct) ->
->         case ct of
->           -- TODO: fix richPlayer's tensions so chords sound good with tritone subs
->           Dom7 -> (myChordHandler genCleanChord (Chord (tritone pc) ct) c pf, dur)
->           _ -> (myChordHandler genRichChord ch c pf, dur)
->       _ -> pfd
+>   do pfd@(pf, dur) <- fancyInterpPhrase pm c pas m
+>      case pa of
+>        ch@(Chord pc ct) ->
+>          case ct of
+>            -- TODO: fix richPlayer's tensions so chords sound good with tritone subs
+>            Dom7 -> return (myChordHandler genCleanChord (Chord (tritone pc) ct) c pf, dur)
+>            _ -> return (myChordHandler genRichChord ch c pf, dur)
+>        _ -> return pfd
 
 -------------------------------------------------------------------------------
 
@@ -141,13 +137,11 @@ third, fifth, seventh, or ninth.
 > reharmInterpPhrase :: PhraseFun a
 > reharmInterpPhrase pm c [] m = perf pm c m
 > reharmInterpPhrase pm c (pa:pas) m =
->     let
->       pfd@(pf, dur) = fancyInterpPhrase pm c pas m
->     in
+>   do  pfd@(pf, dur) <- fancyInterpPhrase pm c pas m
 >       case pa of
 >         ch@(Chord pc ct) ->
->             (myChordHandler genRichChord (getReharmChord $ head pf) c pf, dur)
->         _ -> pfd
+>             return (myChordHandler genRichChord (getReharmChord $ head pf) c pf, dur)
+>         _ -> return pfd
 
 -------------------------------------------------------------------------------
 
