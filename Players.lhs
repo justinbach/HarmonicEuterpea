@@ -14,7 +14,6 @@ creating voicings in interesting and different ways.
 > import Data.Maybe
 > import Data.Tuple
 > import System.Random
-> import System.IO.Unsafe -- just for random numbers!
 
 > myPMap                       :: PlayerName -> Player Note1
 > myPMap "CleanPlayer"         = cleanPlayer
@@ -22,10 +21,6 @@ creating voicings in interesting and different ways.
 > myPMap "TritonePlayer"       = tritonePlayer
 > myPMap "ReharmPlayer"        = reharmPlayer
 > myPMap "ComboPlayer"         = comboPlayer
-
-
-
-
 
 -------------------------------------------------------------------------------
 
@@ -118,25 +113,20 @@ third, fifth, seventh, or ninth.
 >               {pName        = "ReharmPlayer",
 >                interpPhrase = reharmInterpPhrase}
 
-> getReharmChord     :: Event -> PhraseAttribute
+> getReharmChord     :: Event -> SM (PhraseAttribute)
 > getReharmChord mel =
->   let chordTypes = [Maj7, Min7]
->       chordDegs  = [3, 5, 7, 9]
->       ctIndex    = (unsafePerformIO $ randomIO) `mod` (length chordTypes)
->       cdIndex    = (unsafePerformIO $ randomIO) `mod` (length chordDegs)
->       ct         = chordTypes !! ctIndex
->       cd         = chordDegs !! cdIndex
->       melap      = ePitch mel
->       chap       = case (ct, cd) of
+>   do ct <- choose [Maj7, Min7]
+>      cd <- choose [3, 5, 7, 9]
+>      let melap   = ePitch mel
+>          chap    = case (ct, cd) of
 >                       (Min7, 3) -> melap - 3
 >                       (_, 3) -> melap - 4
 >                       (_, 5) -> melap - 7
 >                       (Maj7, 7) -> melap - 11
 >                       (_, 7) -> melap - 10
 >                       (_, 9) -> melap - 2
->       pc         = fst $ pitch chap
->   in
->   Chord pc ct
+>          pc      = fst $ pitch chap
+>      return (Chord pc ct)
 
 
 > reharmInterpPhrase :: PhraseFun a
@@ -145,8 +135,10 @@ third, fifth, seventh, or ninth.
 >   do  pfd@(pf, dur) <- fancyInterpPhrase pm c pas m
 >       case pa of
 >         ch@(Chord pc ct) ->
->             return (myChordHandler genRichChord (getReharmChord $ head pf) c pf, dur)
+>             do reharmChord <- getReharmChord $ head pf
+>                return (myChordHandler genRichChord reharmChord c pf, dur)
 >         _ -> return pfd
+
 
 -------------------------------------------------------------------------------
 
@@ -163,28 +155,20 @@ to use when interpreting harmony.
 > comboInterpPhrase pm c pas m =
 >   do interpPhrase <- choose [richInterpPhrase,
 >                              tritoneInterpPhrase,
->                              fancyInterpPhrase]
+>                              reharmInterpPhrase]
 >      interpPhrase pm c pas m
 
 
+-------------------------------------------------------------------------------
 
 These helper functions are used by the state monad for supplying random numbers.
 
 > getRandom :: SM StdGen
 > getRandom =  SM $ \s -> let (val, newGen) = next s in (newGen, s)
 
-> randomVal :: Int
-> randomVal =  let SM g = getRandom in fst $ next $ fst (g (mkStdGen 42))
-
 > choose :: [a] -> SM (a)
 > choose l@(x:xs) =  do g <- getRandom
 >                       let len = length l
 >                       let index = (fst $ next g) `mod` len
 >                       return (l !! index)
-
--->   let interpPhrases = [richInterpPhrase,
--->                        tritoneInterpPhrase,
--->                        reharmInterpPhrase]
--->       interpIndex   = (unsafePerformIO $ randomIO) `mod` (length interpPhrases)
--->       interpPhrase  = interpPhrases !! interpIndex
--->   in  interpPhrase pm c pas m
+> choose []       =  error "cannot choose from an empty list"

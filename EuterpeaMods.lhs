@@ -519,6 +519,7 @@ BEGIN PERFORMANCE.HS DEFINITIONS
 >               in return (map setDur pf, dur)
 >           Art _                -> return pfd
 >           Orn _                -> return pfd
+>           Chord _ _            -> return pfd
 >
 > class Performable a where
 >   perfDur :: PMap Note1 -> Context Note1 -> Music a -> (Performance, DurT)
